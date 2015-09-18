@@ -105,7 +105,7 @@ class RandomWriter():
         text = message["text"]
         if len(text.split(" ")) < self.k:
           continue
-        likes = len(message["favorited_by"])
+        likes = len(message["favorited_by"]) + 1 # don't ignore 0 likes
         print text, likes
         self.read_input((text, likes))
       
@@ -141,8 +141,8 @@ class RandomWriter():
     return None
 
 
-rw = RandomWriter(4, depickle=False)
-rw.init_gm("/Users/Rohan/src/auth_key", "SONGCHAT")
+rw = RandomWriter(6, depickle=False)
+rw.init_gm("./auth_key", "SONGCHAT")
 
 if not rw.depickled:
   data = rw.read_messages_from_chat()
