@@ -14,7 +14,7 @@ class RandomWriter():
       self.depickled = True
     
     if self.m == None:
-      self.m = defaultdict(list)
+      self.m = {}
       self.depickled = False
 
   def read_input(self, source):
