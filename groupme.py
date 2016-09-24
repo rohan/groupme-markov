@@ -4,6 +4,7 @@ import requests
 import sys, os
 import cPickle as pickle
 from datetime import datetime
+import string
 
 class RandomWriter():
   def __init__(self, k, depickle=True):
@@ -96,27 +97,119 @@ class RandomWriter():
         "/messages", params={"token": self.key, "limit": 100})
     message_count = r.json()["response"]["count"]
     i = 0
+
+    names = defaultdict(str)
+    exclamations = defaultdict(int)
+    exclamation_density = defaultdict(list)
+
+    t_likes = defaultdict(int)
+    t_like_avg = defaultdict(list)
+    
+    liked_by = defaultdict(lambda : defaultdict(int))
+    user_likes = defaultdict(lambda : defaultdict(int))
+
+    most_common_words = defaultdict(int)
+    mcw_per_user = defaultdict(lambda : defaultdict(int))
+
     while r.status_code is 200 and i < message_count:
       resp = r.json()["response"]
       messages = resp["messages"]
       for message in messages:
         if message["system"] or message["text"] is None:
           continue
+
+        if names[message["user_id"]] == "":
+          names[message["user_id"]] = message["name"]
+
         text = message["text"]
+        exclamations[message["user_id"]] += text.count("!")
+        exclamation_density[message["user_id"]].append(text.count("!") /
+            float(len(text)))
+
+        for word in text.split(" "):
+          word = self.translate_non_alphanumerics(word, translate_to=u"").lower()
+          most_common_words[word] += 1
+          mcw_per_user[message["user_id"]][word] += 1
+
         if len(text.split(" ")) < self.k:
           continue
-        likes = len(message["favorited_by"]) + 1 # don't ignore 0 likes
-        print text, likes
-        self.read_input((text, likes))
+
+        for liking_user in message["favorited_by"]:
+          liked_by[message["user_id"]][liking_user] += 1
+          user_likes[liking_user][message["user_id"]] += 1
+        
+        likes = len(message["favorited_by"]) # don't ignore 0 likes
+        t_likes[message["user_id"]] += likes
+        t_like_avg[message["user_id"]].append(likes)
+
+        self.read_input((text, likes+1))
       
       last_id = messages[-1]["id"]
       r = requests.get("https://api.groupme.com/v3/groups/" + self.gid +
           "/messages", params={"token": self.key, "before_id": last_id, "limit":
             100})
-      sys.stdout.flush()
+
+    for (k,v) in sorted(exclamations.iteritems(), key=lambda (k,v): v,
+        reverse=True):
+      d = exclamation_density[k]
+      print names[k] + ": " + str(exclamations[k]) + " " + \
+      str(sum(d) / len(d))
+
+    print "\n*** LIKES ***"
+    for (k,v) in sorted(t_likes.iteritems(), key=lambda (k,v): v, reverse=True):
+      l = t_like_avg[k]
+      print names[k] + ": " + str(t_likes[k]) + " " + \
+      str(sum(l) / float(len(l)))
+
+    print "\n*** LIKE ASSOCIATIONS ***"
+    print "User -> Users who liked their post"
+    self_likers = []
+    for (user, likes_from) in sorted(liked_by.iteritems(), key=lambda (k,v):
+        sum(v.values()), reverse=True):
+      # users this user has received likes FROM
+      print "User:", names[user], "(" + str(sum(likes_from.values())) + ")"
+      for (liker, count) in sorted(likes_from.iteritems(), key=lambda (k,v): v,
+          reverse=True):
+        print "\t" + names[liker] + ": " + str(count)
+        if user == liker: self_likers.append((names[user], count))
+
+    print "\nUser -> Users whose posts they liked"
+    for (user, likes_to) in sorted(user_likes.iteritems(), key=lambda (k,v):
+        sum(v.values()), reverse=True):
+      # users this user has given likes TO
+      print "User:", names[user], "(" + str(sum(likes_to.values())) + ")"
+      for (liking, count) in sorted(likes_to.iteritems(), key=lambda (k,v): v,
+          reverse=True):
+        print "\t" + names[liking] + ": " + str(count)
+
+    print "\n*** SELF-LIKERS ***"
+    for sl in self_likers:
+      print sl[0] + ": " + str(sl[1])
+
+
+    print "\n***MOST COMMON WORDS***"
+    with open("mcw.txt", "w") as f:
+      for (w, c) in sorted(most_common_words.iteritems(), key=lambda (k,v): v,
+          reverse=True):
+        line = w + ": " + str(c) + "\n"
+        f.write(line.encode("utf-8"))
+
+    with open("mcw_per_user.txt", "w") as f:
+      for user in mcw_per_user.keys():
+        line = names[user] + "\n"
+        f.write(line.encode("utf-8"))
+        for (word, count) in sorted(mcw_per_user[user].iteritems(), key=lambda (k,v):
+            v, reverse=True):
+          line = "\t" + word + ": " + str(count) + "\n"
+          f.write(line.encode("utf-8"))
 
     if pickle:
       self.pickle_me()
+
+  def translate_non_alphanumerics(self, to_translate, translate_to=u'_'):
+      not_letters_or_digits = u'!"#%\'()*+,-./:;<=>?@[\]^_`{|}~'
+      translate_table = dict((ord(char), translate_to) for char in not_letters_or_digits)
+      return to_translate.translate(translate_table)
 
   def pickle_me(self):
     date = datetime.now().strftime("%m-%d-%y %H.%M.%S")
