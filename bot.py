@@ -182,6 +182,7 @@ class Generator():
       else:
         output += [random.choice(letters)]
 
+    print output
     return " ".join(output)
 
   def k_random_words(self, speaker):
