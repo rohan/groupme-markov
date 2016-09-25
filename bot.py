@@ -118,21 +118,24 @@ class Analyzer():
     self.self_likes = defaultdict(int)
 
     for message in messages:
-      sender = message["user_id"]
-      self.messages_by_user[sender] += [message]
-      
-      text = message["text"]
-      for word in text.split(" "):
-        word = self.translate_non_alphanumerics(word, translate_to=u"").lower()
-        self.most_common_words[word][sender] += 1
-        self.mcw_per_user[sender][word] += 1
-      
-      for liker in message["favorited_by"]:
-        self.user_likes[liker][sender] += 1
-        self.likes_per_user[sender][liker] += 1
+      self.read_message(message)
 
-        if liker == sender:
-          self.self_likes[sender] += 1
+  def read_message(self, message):
+    sender = message["user_id"]
+    self.messages_by_user[sender] += [message]
+    
+    text = message["text"]
+    for word in text.split(" "):
+      word = self.translate_non_alphanumerics(word, translate_to=u"").lower()
+      self.most_common_words[word][sender] += 1
+      self.mcw_per_user[sender][word] += 1
+    
+    for liker in message["favorited_by"]:
+      self.user_likes[liker][sender] += 1
+      self.likes_per_user[sender][liker] += 1
+
+      if liker == sender:
+        self.self_likes[sender] += 1
 
   def translate_non_alphanumerics(self, to_translate, translate_to=u'_'):
     not_letters_or_digits = u'!"#%\'()*+,-./:;<=>?@[\]^_`{|}~'
@@ -147,6 +150,9 @@ class Generator():
     self.m = defaultdict(lambda : defaultdict(list))
 
     for message in messages:
+      self.read_message(message)
+
+  def read_message(self, message):
       self.read_input(message["text"], message["user_id"],
           len(message["favorited_by"]) + 1)
 
@@ -209,7 +215,9 @@ class BotEngine(bottle.Bottle):
     text = msg["text"]
     sid = msg["user_id"]
     if not text.startswith("/bot"):
-      return
+      # read this in as a normal message
+      analyzer.read_message(msg)
+      generator.read_message(msg)
 
     # acceptable commands:
     # /bot ping: returns "hello world"
