@@ -182,7 +182,7 @@ class Generator():
       else:
         output += [random.choice(letters)]
 
-    return output
+    return " ".join(output)
 
   def k_random_words(self, speaker):
     keys = self.m[speaker].keys()
@@ -367,9 +367,9 @@ class BotEngine(bottle.Bottle):
     for uid in sorted(likes, key=likes.get, reverse=True):
       out += names[uid] + " has liked their own posts "
       if likes[uid] == 1:
-        out += str(likes[uid]) + " time."
+        out += str(likes[uid]) + " time.\n"
       else:
-        out += str(likes[uid]) + " times."
+        out += str(likes[uid]) + " times.\n"
 
     return out
 
