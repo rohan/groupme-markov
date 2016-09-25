@@ -197,7 +197,7 @@ class BotEngine(bottle.Bottle):
 
       most_common = [names[nid] + " [" + str(words[word][nid]) + "]"
           for nid in sorted(words[word], key=words[word].get, reverse=True)]
-      out += most_common.join(", ") + ")\n"
+      out += ", ".join(most_common) + ")\n"
 
     return out
 
