@@ -288,6 +288,7 @@ class BotEngine(bottle.Bottle):
   def self_likers(self):
     names = self.analyzer.names
     likes = self.analyzer.self_likes
+    out = ""
 
     for uid in sorted(likes, key=likes.get, reverse=True):
       out += names[uid] + " has liked their own posts "
