@@ -319,6 +319,9 @@ class BotEngine(bottle.Bottle):
 /bot ego: gets list of people who've liked their own messages
 /bot help: prints this message
 """
+    elif "love" in command:
+      out = "I can't provide love, but I can provide the next best thing:
+      http://lmgtfy.com/?q=weird+porn"
     else:
       out = "Unrecognized command " + text + ". Ignoring."
 
