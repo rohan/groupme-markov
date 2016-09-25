@@ -207,7 +207,7 @@ class BotEngine(bottle.Bottle):
         out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "ego":
       if len(command) == 2:
-        pass
+        out = self.self_likers()
       else:
         out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "help":
@@ -282,6 +282,19 @@ class BotEngine(bottle.Bottle):
     out += "\n".join([names[uid] + " [" + str(likes[uid]) + "]" for uid in
       sorted(likes, key=likes.get, reverse=True)])
     out += "\n"
+
+    return out
+
+  def self_likes(self):
+    names = self.analyzer.names
+    likes = self.analyzer.self_likes
+
+    for uid in sorted(likes, key=likes.get, reverse=True):
+      out += names[uid] + " has liked their own posts "
+      if likes[uid] == 1:
+        out += str(likes[uid]) + " time."
+      else:
+        out += str(likes[uid]) + " times."
 
     return out
 
