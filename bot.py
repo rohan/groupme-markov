@@ -190,7 +190,7 @@ class BotEngine(bottle.Bottle):
     words = self.analyzer.most_common_words
     names = self.analyzer.names
 
-    for key in sorted(words,
+    for word in sorted(words,
         key=lambda word : sum(words[word].values()),
         reverse=True):
       out += "\t" + word + ": " + str(sum(words[word].values())) + " (most frequently by "
