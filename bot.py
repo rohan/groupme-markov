@@ -377,7 +377,7 @@ class BotEngine(bottle.Bottle):
   def mimic(self, uid):
     names = self.analyzer.names
     out = names[uid]
-    out += ": \"" + self.generator.generate(uid, 30, cut=True) + "\""
+    out += ": \"" + str(self.generator.generate(uid, 30, cut=False)) + "\""
     return out
 
 convo = GroupMe("./auth_key")
