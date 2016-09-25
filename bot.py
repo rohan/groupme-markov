@@ -170,7 +170,14 @@ class BotEngine(bottle.Bottle):
       if len(command) == 2:
         out = self.most_common_words()
       elif len(command) >= 4:
-        out = self.most_common_words_for_user(" ".join(command[3:])) 
+        if command[3] == "me":
+          out = self.most_common_words_for_user(sid) 
+        else:
+          uid = self.find_uid(" ".join(command[3:]))
+          if uid is None:
+            out = "Unable to find user " + " ".join(command[3:]) "."
+          else:
+            out = self.most_common_words_for_user(uid)
       else:
         out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "likes":
@@ -192,6 +199,7 @@ class BotEngine(bottle.Bottle):
 /bot likes from <x>: gets list of people <x> has liked
 /bot likes to <x>: gets list of people who like <x>
 /bot ego: gets list of people who've liked their own messages
+/bot help: prints this message
 """
     else:
       out = "Unrecognized command " + text + ". Ignoring."
@@ -215,12 +223,15 @@ class BotEngine(bottle.Bottle):
 
     return out
 
-  def most_common_words_for_user(self, name):
+  def find_user_id(self, name):
     names = self.analyzer.names
     reversed_names = { v : k for (k,v) in names.iteritems() }
     if name not in reversed_names:
-      return "Unable to find name " + name + "."
-    uid = reversed_names[name]
+      return None
+    return reversed_names[name]
+
+  def most_common_words_for_user(self, uid):
+    names = self.analyzer.names
     words = self.analyzer.mcw_per_user[uid]
     out = "Most common words for " + names[uid] + ":\n"
 
