@@ -66,7 +66,6 @@ class GroupMe():
           + self.gid + "/messages",
           params = {"token": self.key, "limit": 100, "before_id": last_id})
 
-
     return out
 
   def get_all_names(self):
@@ -169,10 +168,9 @@ class BotEngine(bottle.Bottle):
         out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "words":
       if len(command) == 2:
-        out = "The most common words are:\n"
-        out += self.most_common_words()
+        out = self.most_common_words()
       elif len(command) == 4:
-        pass
+        out = self.most_common_words_for_user(command[3]) 
       else:
         out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "likes":
@@ -185,6 +183,16 @@ class BotEngine(bottle.Bottle):
         pass
       else:
         out = "Unrecognized command " + text + ". Ignoring."
+    elif command[1] == "help":
+      out = """Hi! I'm a simple GroupMe bot. Here's what I can do:
+/bot ping: returns "hello world"
+/bot words: returns most common words
+/bot words for <x>: takes a name and gets their words
+/bot words for me: gets sender's words
+/bot likes from <x>: gets list of people <x> has liked
+/bot likes to <x>: gets list of people who like <x>
+/bot ego: gets list of people who've liked their own messages
+"""
     else:
       out = "Unrecognized command " + text + ". Ignoring."
 
@@ -192,7 +200,7 @@ class BotEngine(bottle.Bottle):
         {"bot_id": self.bot_id, "text": out})
       
   def most_common_words(self):
-    out = ""
+    out = "Most common words:\n"
     words = self.analyzer.most_common_words
     names = self.analyzer.names
 
@@ -205,6 +213,21 @@ class BotEngine(bottle.Bottle):
           for nid in sorted(words[word], key=words[word].get, reverse=True)]
       out += ", ".join(most_common) + ")\n"
 
+    return out
+
+  def most_common_words_for_user(self, name):
+    names = self.analyzer.names
+    reversed_names = { v : k for (k,v) in names.iteritems() }
+    if name not in reversed_names:
+      return "Unable to find name " + name + "."
+    uid = reversed_names[name]
+    words = self.analyzer.mcw_per_user[uid]
+    out = "Most common words for " + names[uid] + ":\n"
+
+    out += ", ".join([word + "[" + str(words[word]) + "]"
+      for word in sorted(words, key=words.get, reverse=True)])
+
+    out += "\n"
     return out
 
 convo = GroupMe("./auth_key")
