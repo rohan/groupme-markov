@@ -173,7 +173,7 @@ class BotEngine(bottle.Bottle):
         if command[3] == "me":
           out = self.most_common_words_for_user(sid) 
         else:
-          uid = self.find_uid(" ".join(command[3:]))
+          uid = self.get_uid(" ".join(command[3:]))
           if uid is None:
             out = "Unable to find user " + " ".join(command[3:]) + "."
           else:
@@ -186,7 +186,7 @@ class BotEngine(bottle.Bottle):
           if command[3] == "me":
             out = self.likes_from(sid)
           else:
-            uid = self.find_uid(" ".join(command[3:]))
+            uid = self.get_uid(" ".join(command[3:]))
             if uid is None:
               out = "Unable to find user " + " ".join(command[3:]) + "."
             else:
@@ -196,7 +196,7 @@ class BotEngine(bottle.Bottle):
           if command[3] == "me":
             out = self.likes_to(sid)
           else:
-            uid = self.find_uid(" ".join(command[3:]))
+            uid = self.get_uid(" ".join(command[3:]))
             if uid is None:
               out = "Unable to find user " + " ".join(command[3:]) + "."
             else:
@@ -243,7 +243,7 @@ class BotEngine(bottle.Bottle):
 
     return out
 
-  def find_user_id(self, name):
+  def get_uid(self, name):
     names = self.analyzer.names
     reversed_names = { v : k for (k,v) in names.iteritems() }
     if name not in reversed_names:
