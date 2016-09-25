@@ -224,6 +224,7 @@ class BotEngine(bottle.Bottle):
       msg["favorited_by"] = []
       analyzer.read_message(msg)
       generator.read_message(msg)
+      return
 
     # acceptable commands:
     # /bot ping: returns "hello world"
