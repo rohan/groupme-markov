@@ -285,7 +285,7 @@ class BotEngine(bottle.Bottle):
 
     return out
 
-  def self_likes(self):
+  def self_likers(self):
     names = self.analyzer.names
     likes = self.analyzer.self_likes
 
