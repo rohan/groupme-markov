@@ -169,8 +169,8 @@ class BotEngine(bottle.Bottle):
     elif command[1] == "words":
       if len(command) == 2:
         out = self.most_common_words()
-      elif len(command) == 4:
-        out = self.most_common_words_for_user(command[3]) 
+      elif len(command) >= 4:
+        out = self.most_common_words_for_user(" ".join(command[3:])) 
       else:
         out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "likes":
