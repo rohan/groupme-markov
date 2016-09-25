@@ -130,8 +130,6 @@ class Analyzer():
       self.most_common_words[word][sender] += 1
       self.mcw_per_user[sender][word] += 1
     
-    if "favorited_by" not in liker:
-      return
     for liker in message["favorited_by"]:
       self.user_likes[liker][sender] += 1
       self.likes_per_user[sender][liker] += 1
