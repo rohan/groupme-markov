@@ -265,7 +265,7 @@ class BotEngine(bottle.Bottle):
     names = self.analyzer.names
     liked = self.analyzer.user_likes[uid]
 
-    out = names[uid] + " has liked a total of " + sum(liked.values()) + " messages, most frequently from:\n"
+    out = names[uid] + " has liked a total of " + str(sum(liked.values())) + " messages, most frequently from:\n"
 
     out += "\n".join([names[uid] for uid in
       sorted(liked, keys=liked.get, reverse=True)])
@@ -277,7 +277,7 @@ class BotEngine(bottle.Bottle):
     names = self.analyzer.names
     likes = self.analyzer.likes_per_user[uid]
 
-    out = names[uid] + "'s messages have been liked a total of " + sum(likes.values()) + " messages, most frequently from:\n"
+    out = names[uid] + "'s messages have been liked a total of " + str(sum(likes.values())) + " messages, most frequently from:\n"
 
     out += "\n".join([names[uid] for uid in
       sorted(likes, keys=likes.get, reverse=True)])
