@@ -157,7 +157,6 @@ class BotEngine(bottle.Bottle):
       if len(command) == 2:
         out = "The most common words are:\n"
         out += self.most_common_words()
-        for 
       elif len(command) == 4:
         # most common words for <x>
       else:
