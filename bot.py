@@ -11,9 +11,17 @@ import bottle
 #GROUP_ID = "25323255" 
 GROUP_ID = "11436795"
 BOT_ID = "34cd6ae9e58a5c32f24d310cff"
-IGNORE = ['the', 'of', 'and', 'to', 'a', 'in', 'for', 'is', 'on', 'that', 'by',
-    'this', 'with', 'i', 'you', 'it', 'not', 'or', 'be', 'are', 'from', 'at',
-    'as', 'your', 'all', 'have', 'new', 'more', 'an', 'was']
+IGNORE = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'I', 'it',
+    'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at', 'this', 'but',
+    'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she', 'or', 'an', 'will',
+    'my', 'one', 'all', 'would', 'there', 'their', 'what', 'so', 'up', 'out',
+    'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make', 'can',
+    'like', 'time', 'no', 'just', 'him', 'know', 'take', 'person', 'into',
+    'year', 'your', 'good', 'some', 'could', 'them', 'see', 'other', 'than',
+    'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also',
+    'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way',
+    'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most',
+    'us', '']
 
 def progress(cur, tot):
   out = str(cur) + " of " + str(tot) + " messages downloaded"
