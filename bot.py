@@ -183,8 +183,7 @@ class BotEngine(bottle.Bottle):
     for key in sorted(words,
         key=lambda word : sum(words[word].values()),
         reverse=True):
-      out += "\t" + word + ": " + str(sum(words[word].values())) + " (most frequently
-      by "
+      out += "\t" + word + ": " + str(sum(words[word].values())) + " (most frequently by "
 
       most_common = [names[nid] + " [" + str(words[word][nid]) + "]"
           for nid in sorted(words[word], key=words[word].get, reverse=True)]
@@ -200,6 +199,6 @@ messages = convo.get_all_messages()
 # create a new analyzer
 analyzer = Analyzer(messages)
 
-bot = BotEngine(analyzer)
-bot.run(host='localhost', 8080)
+bot = BotEngine("34cd6ae9e58a5c32f24d310cff", analyzer)
+bot.run(host='0.0.0.0', port=8080)
 
