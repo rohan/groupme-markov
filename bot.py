@@ -181,7 +181,7 @@ class BotEngine(bottle.Bottle):
       else:
         out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "likes":
-      if len(command) == 4:
+      if len(command) >= 4:
         if command[2] == "from":
           if command[3] == "me":
             out = self.likes_from(sid)
