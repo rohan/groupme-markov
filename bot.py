@@ -158,17 +158,17 @@ class BotEngine(bottle.Bottle):
         out = "The most common words are:\n"
         out += self.most_common_words()
       elif len(command) == 4:
-        # most common words for <x>
+        pass
       else:
         out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "likes":
       if len(command) == 4:
-        # likes
+        pass
       else:
         out = "Unrecognized comand " + text + ". Ignoring."
     elif command[1] == "ego":
       if len(command) == 2:
-        # self-likes
+        pass
       else:
         out = "Unrecognized command " + text + ". Ignoring."
 
