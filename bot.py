@@ -11,6 +11,9 @@ import bottle
 #GROUP_ID = "25323255" 
 GROUP_ID = "11436795"
 BOT_ID = "34cd6ae9e58a5c32f24d310cff"
+IGNORE = ['the', 'of', 'and', 'to', 'a', 'in', 'for', 'is', 'on', 'that', 'by',
+    'this', 'with', 'i', 'you', 'it', 'not', 'or', 'be', 'are', 'from', 'at',
+    'as', 'your', 'all', 'have', 'new', 'more', 'an', 'was']
 
 def progress(cur, tot):
   out = str(cur) + " of " + str(tot) + " messages downloaded"
@@ -127,6 +130,8 @@ class Analyzer():
     text = message["text"]
     for word in text.split(" "):
       word = self.translate_non_alphanumerics(word, translate_to=u"").lower()
+      if word in IGNORE:
+        continue
       self.most_common_words[word][sender] += 1
       self.mcw_per_user[sender][word] += 1
     
@@ -322,7 +327,7 @@ class BotEngine(bottle.Bottle):
       out += "\t" + word + ": " + str(sum(words[word].values())) + " (most frequently by "
 
       most_common = [names[nid] + " [" + str(words[word][nid]) + "]"
-          for nid in sorted(words[word], key=words[word].get, reverse=True)]
+          for nid in sorted(words[word], key=words[word].get, reverse=True)[:5]]
       out += ", ".join(most_common) + ")\n"
 
     print out
