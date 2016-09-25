@@ -1,9 +1,3 @@
-# accepts a GroupMe conversation, formatted as (message, likes)
-# supports the following operations:
-# mylikes: who have I liked the most?
-# likedme: who has liked me the most?
-# make <x> talk: generate random sentence from <x>
-
 from collections import defaultdict
 import random
 import requests
@@ -14,8 +8,14 @@ import string
 import pprint
 
 import bottle
+GROUP_ID = "25323255" 
+#GROUP_ID = "11436795"
+BOT_ID = "34cd6ae9e58a5c32f24d310cff"
 
-GROUP_ID = "25323255"
+def progress(cur, tot):
+  out = str(cur) + " of " + str(tot) + " messages downloaded"
+  sys.stdout.write('%s\r' % out)
+  sys.stdout.flush()
 
 # this class can *only* read from the group the bot has access to
 class GroupMe():
@@ -38,6 +38,7 @@ class GroupMe():
     self.gid = GROUP_ID
 
   def get_all_messages(self):
+    print "Reading messages..."
     r = requests.get("https://api.groupme.com/v3/groups/"
         + self.gid + "/messages",
         params = {"token": self.key, "limit": 100})
@@ -47,6 +48,7 @@ class GroupMe():
     out = []
 
     while r.status_code is 200 and i < message_count:
+      progress(i, message_count)
       resp = r.json()["response"]
       messages = resp["messages"]
 
@@ -60,6 +62,8 @@ class GroupMe():
         if message["text"].startswith("/bot"):
           continue
         out += [message]
+
+      i += len(messages)
 
       last_id = messages[-1]["id"]
       r = requests.get("https://api.groupme.com/v3/groups/"
@@ -132,15 +136,67 @@ class Analyzer():
         for char in not_letters_or_digits)
     return to_translate.translate(translate_table)
 
-class RandomWriter():
-  pass
+class Generator():
+  def __init__(self, k, messages):
+    self.k = k
+    # user_id -> (phrase -> [next words])
+    self.m = defaultdict(lambda : defaultdict(list))
+
+    for message in messages:
+      self.read_input(message["text"], message["user_id"],
+          len(message["favorited_by"]) + 1)
+
+  def read_input(self, message, sender, likes):
+    words = message.split(" ")
+
+    for i in range(len(words) - self.k):
+      # store every k-length interval
+      window = " ".join(words[i:i+self.k])
+      self.m[sender][window] += [words[i+self.k]] * likes
+
+    # make sure the last interval exists as well
+    window = " ".join(words[(-1 * self.k):])
+    # the 2nd self.m[window] will either preserve or set to [] the first
+    self.m[sender][window] = self.m[sender][window]
+
+  def generate(self, uid, length, cut=False):
+    output = self.k_random_words(uid)
+
+    for i in range(self.k, length):
+      window = " ".join(output[(i - self.k):])
+      letters = self.m[uid][window]
+
+      if len(letters) == 0:
+        if cut:
+          return output
+        seed = self.k_random_words(uid)
+        if (i + self.k > length):
+          seed = seed[:(length - i)]
+
+        i += self.k
+        output += seed
+      else:
+        output += [random.choice(letters)]
+
+    return output
+
+  def k_random_words(self, speaker):
+    keys = self.m[speaker].keys()
+    wkeys = []
+
+    for s in keys:
+      letters = self.m[speaker][s]
+      wkeys += [s] * len(letters)
+
+    return random.choice(wkeys).split(" ")
 
 class BotEngine(bottle.Bottle):
-  def __init__(self, bot_id, analyzer):
+  def __init__(self, bot_id, analyzer, generator):
     super(BotEngine, self).__init__()
     self.post('/groupme/callback', callback=self.receive)
     self.bot_id = bot_id
     self.analyzer = analyzer
+    self.generator = generator
 
   def receive(self):
     msg = bottle.request.json
@@ -164,6 +220,19 @@ class BotEngine(bottle.Bottle):
     if command[1] == "ping":
       if len(command) == 2:
         out = "Hello, world!"
+      else:
+        out = "Unrecognized command " + text + ". Ignoring."
+
+    elif command[1] == "mimic":
+      if len(command) >= 3:
+        if command[2] == "me":
+          out = self.mimic(sid)
+        else:
+          uid = self.get_uid(" ".join(command[2:]))
+          if uid is None:
+            out = "Unable to find user " + " ".join(command[2:]) + "."
+          else:
+            out = self.mimic(uid)
       else:
         out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "words":
@@ -213,6 +282,7 @@ class BotEngine(bottle.Bottle):
     elif command[1] == "help":
       out = """Hi! I'm a simple GroupMe bot. Here's what I can do:
 /bot ping: returns "hello world"
+/bot mimic <x>: returns a random sentence, based on what <x> has said
 /bot words: returns most common words
 /bot words for <x>: takes a name and gets their words
 /bot words for me: gets sender's words
@@ -299,15 +369,19 @@ class BotEngine(bottle.Bottle):
 
     return out
 
+  def mimic(self, uid):
+    names = self.analyzer.names
+    out = names[uid]
+    out += ": \"" + self.generator.generate(uid, 30, cut=True) + "\""
+    return out
+
 convo = GroupMe("./auth_key")
 names = convo.get_all_names()
 messages = convo.get_all_messages()
-#pprint.pprint(messages)
 
-# messages now contains all messages from group_name
-# create a new analyzer
 analyzer = Analyzer(names, messages)
+generator = Generator(7, messages)
 
-bot = BotEngine("34cd6ae9e58a5c32f24d310cff", analyzer)
+bot = BotEngine(BOT_ID, analyzer, generator)
 bot.run(host='0.0.0.0', port=8080)
 
