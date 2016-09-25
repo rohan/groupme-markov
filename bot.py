@@ -181,6 +181,8 @@ class BotEngine(bottle.Bottle):
         pass
       else:
         out = "Unrecognized command " + text + ". Ignoring."
+    else:
+      out = "Unrecognized command " + text + ". Ignoring."
 
     r = requests.post("https://api.groupme.com/v3/bots/post",
         {"bot_id": self.bot_id, "text": out})
