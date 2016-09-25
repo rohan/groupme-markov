@@ -309,7 +309,7 @@ class BotEngine(bottle.Bottle):
 
     for word in sorted(words,
         key=lambda word : sum(words[word].values()),
-        reverse=True):
+        reverse=True)[:15]:
       out += "\t" + word + ": " + str(sum(words[word].values())) + " (most frequently by "
 
       most_common = [names[nid] + " [" + str(words[word][nid]) + "]"
@@ -331,7 +331,7 @@ class BotEngine(bottle.Bottle):
     out = "Most common words for " + names[uid] + ":\n"
 
     out += "\n  ".join([word + " [" + str(words[word]) + "]"
-      for word in sorted(words, key=words.get, reverse=True)])
+      for word in sorted(words, key=words.get, reverse=True)[:15]])
 
     out += "\n"
     return out
@@ -343,7 +343,7 @@ class BotEngine(bottle.Bottle):
     out = names[uid] + " has liked a total of " + str(sum(liked.values())) + " messages, most frequently from:\n"
 
     out += "\n".join([names[uid] + " [" + str(liked[uid]) + "]" for uid in
-      sorted(liked, key=liked.get, reverse=True)])
+      sorted(liked, key=liked.get, reverse=True)[:15]])
     out += "\n"
 
     return out
@@ -365,7 +365,7 @@ class BotEngine(bottle.Bottle):
     likes = self.analyzer.self_likes
     out = ""
 
-    for uid in sorted(likes, key=likes.get, reverse=True):
+    for uid in sorted(likes, key=likes.get, reverse=True)[:15]:
       out += names[uid] + " has liked their own posts "
       if likes[uid] == 1:
         out += str(likes[uid]) + " time.\n"
