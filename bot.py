@@ -80,8 +80,12 @@ class GroupMe():
       return
 
     resp = r.json()["response"]
-    return {member["user_id"] : member["nickname"] for member in
-      resp["members"]}
+    out = defaultdict(str)
+
+    for member in resp["members"]:
+      out[member["user_id"]] = member["nickname"]
+
+    return out
 
 class Analyzer():
   # messages is passed in raw from GroupMe
