@@ -224,7 +224,7 @@ class BotEngine(bottle.Bottle):
     words = self.analyzer.mcw_per_user[uid]
     out = "Most common words for " + names[uid] + ":\n"
 
-    out += ", ".join([word + "[" + str(words[word]) + "]"
+    out += "\n\t".join([word + " [" + str(words[word]) + "]"
       for word in sorted(words, key=words.get, reverse=True)])
 
     out += "\n"
