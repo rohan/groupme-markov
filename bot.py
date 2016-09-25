@@ -37,8 +37,6 @@ class GroupMe():
     global GROUP_ID
     self.gid = GROUP_ID
 
-    self.messages = []
-
   def get_all_messages(self):
     r = requests.get("https://api.groupme.com/v3/groups/"
         + self.gid + "/messages",
@@ -67,9 +65,21 @@ class GroupMe():
 
     return out
 
+  def get_all_names(self):
+    r = requests.get("https://api.groupme.com/v3/groups/" + self.gid,
+        params = {"token": self.key})
+    if r.status_code is not 200:
+      print "get_all_names: couldn't read from the GroupMe endpoint"
+      return
+
+    resp = r.json()["response"]
+    return {member["user_id"] : member["nickname"] for member in
+      resp["members"]}
+
 class Analyzer():
   # messages is passed in raw from GroupMe
-  def __init__(self, messages):
+  def __init__(self, names, messages):
+    self.names = names
     self.messages = messages
     # do some preanalysis
 
@@ -192,12 +202,13 @@ class BotEngine(bottle.Bottle):
     return out
 
 convo = GroupMe("./auth_key")
+names = convo.get_all_names()
 messages = convo.get_all_messages()
 #pprint.pprint(messages)
 
 # messages now contains all messages from group_name
 # create a new analyzer
-analyzer = Analyzer(messages)
+analyzer = Analyzer(names, messages)
 
 bot = BotEngine("34cd6ae9e58a5c32f24d310cff", analyzer)
 bot.run(host='0.0.0.0', port=8080)
