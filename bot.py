@@ -175,7 +175,7 @@ class BotEngine(bottle.Bottle):
         else:
           uid = self.find_uid(" ".join(command[3:]))
           if uid is None:
-            out = "Unable to find user " + " ".join(command[3:]) "."
+            out = "Unable to find user " + " ".join(command[3:])  + "."
           else:
             out = self.most_common_words_for_user(uid)
       else:
