@@ -216,7 +216,7 @@ class BotEngine(bottle.Bottle):
     sid = msg["user_id"]
     if not text.startswith("/bot"):
       # read this in as a normal message
-      msg["favorited_by"] = 0
+      msg["favorited_by"] = []
       analyzer.read_message(msg)
       generator.read_message(msg)
 
