@@ -175,16 +175,36 @@ class BotEngine(bottle.Bottle):
         else:
           uid = self.find_uid(" ".join(command[3:]))
           if uid is None:
-            out = "Unable to find user " + " ".join(command[3:])  + "."
+            out = "Unable to find user " + " ".join(command[3:]) + "."
           else:
             out = self.most_common_words_for_user(uid)
       else:
         out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "likes":
       if len(command) == 4:
-        pass
+        if command[2] == "from":
+          if command[3] == "me":
+            out = self.likes_from(sid)
+          else:
+            uid = self.find_uid(" ".join(command[3:]))
+            if uid is None:
+              out = "Unable to find user " + " ".join(command[3:]) + "."
+            else:
+              out = self.likes_from(uid)
+
+        elif command[2] == "to":
+          if command[3] == "me":
+            out = self.likes_to(sid)
+          else:
+            uid = self.find_uid(" ".join(command[3:]))
+            if uid is None:
+              out = "Unable to find user " + " ".join(command[3:]) + "."
+            else:
+              out = self.likes_to(uid)
+        else:
+          out = "Unrecognized command " + text + ". Ignoring."
       else:
-        out = "Unrecognized comand " + text + ". Ignoring."
+        out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "ego":
       if len(command) == 2:
         pass
@@ -239,6 +259,30 @@ class BotEngine(bottle.Bottle):
       for word in sorted(words, key=words.get, reverse=True)])
 
     out += "\n"
+    return out
+
+  def likes_from(self, uid):
+    names = self.analyzer.names
+    liked = self.analyzer.user_likes[uid]
+
+    out = names[uid] + " has liked a total of " + sum(liked.values) + " messages, most frequently from:\n"
+
+    out += "\n".join([names[uid] for uid in
+      sorted(liked, keys=liked.get, reverse=True)])
+    out += "\n"
+
+    return out
+
+  def likes_to(self, uid):
+    names = self.analyzer.names
+    likes = self.analyzer.likes_per_user[uid]
+
+    out = names[uid] + "'s messages have been liked a total of " + sum(likes.values) + " messages, most frequently from:\n"
+
+    out += "\n".join([names[uid] for uid in
+      sorted(likes, keys=likes.get, reverse=True)])
+    out += "\n"
+
     return out
 
 convo = GroupMe("./auth_key")
