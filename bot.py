@@ -130,6 +130,8 @@ class Analyzer():
       self.most_common_words[word][sender] += 1
       self.mcw_per_user[sender][word] += 1
     
+    if "favorited_by" not in liker:
+      return
     for liker in message["favorited_by"]:
       self.user_likes[liker][sender] += 1
       self.likes_per_user[sender][liker] += 1
@@ -153,8 +155,8 @@ class Generator():
       self.read_message(message)
 
   def read_message(self, message):
-      self.read_input(message["text"], message["user_id"],
-          len(message["favorited_by"]) + 1)
+    self.read_input(message["text"], message["user_id"],
+        len(message["favorited_by"]) + 1)
 
   def read_input(self, message, sender, likes):
     words = message.split(" ")
@@ -216,6 +218,7 @@ class BotEngine(bottle.Bottle):
     sid = msg["user_id"]
     if not text.startswith("/bot"):
       # read this in as a normal message
+      msg["favorited_by"] = 0
       analyzer.read_message(msg)
       generator.read_message(msg)
 
@@ -324,6 +327,7 @@ class BotEngine(bottle.Bottle):
           for nid in sorted(words[word], key=words[word].get, reverse=True)]
       out += ", ".join(most_common) + ")\n"
 
+    print out
     return out
 
   def get_uid(self, name):
