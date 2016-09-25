@@ -8,8 +8,8 @@ import string
 import pprint
 
 import bottle
-GROUP_ID = "25323255" 
-#GROUP_ID = "11436795"
+#GROUP_ID = "25323255" 
+GROUP_ID = "11436795"
 BOT_ID = "34cd6ae9e58a5c32f24d310cff"
 
 def progress(cur, tot):
@@ -80,7 +80,7 @@ class GroupMe():
       return
 
     resp = r.json()["response"]
-    out = defaultdict(str)
+    out = defaultdict(lambda : "(former member)")
 
     for member in resp["members"]:
       out[member["user_id"]] = member["nickname"]
