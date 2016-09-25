@@ -55,6 +55,10 @@ class GroupMe():
           continue
         if message["sender_type"] == u'bot':
           continue
+
+        # ignore bot commands
+        if message["text"].startswith("/bot"):
+          continue
         out += [message]
 
       last_id = messages[-1]["id"]
