@@ -409,7 +409,7 @@ class BotEngine(bottle.Bottle):
     return out
 
   def send_message(self, message):
-    lines = message.split("\n")
+    words = message.split(" ")
     splits = []
     current = ""
     count = 0
@@ -419,7 +419,7 @@ class BotEngine(bottle.Bottle):
         splits += [current]
         count = 0
         current = ""
-      current += line + "\n"
+      current += line + " "
       count += len(line)
 
     for split in splits:
