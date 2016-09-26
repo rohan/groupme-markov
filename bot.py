@@ -422,6 +422,8 @@ class BotEngine(bottle.Bottle):
       current += line + " "
       count += len(line)
 
+    splits += [current]
+
     for split in splits:
       r = requests.post("https://api.groupme.com/v3/bots/post",
           {"bot_id": self.bot_id, "text": split})
