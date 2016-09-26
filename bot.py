@@ -418,6 +418,7 @@ class BotEngine(bottle.Bottle):
       if count + len(line) >= LIMIT:
         splits += [current]
         count = 0
+        current = ""
       current += line + "\n"
       count += len(line)
 
