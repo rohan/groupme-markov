@@ -22,11 +22,30 @@ IGNORE = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'I', 'it',
     'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way',
     'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most',
     'us', '']
+LENGTH = 450
 
 def progress(cur, tot):
   out = str(cur) + " of " + str(tot) + " messages downloaded"
   sys.stdout.write('%s\r' % out)
   sys.stdout.flush()
+
+def send_message(message):
+  lines = message.split("\n")
+  splits = []
+  current = ""
+  count = 0
+
+  for line in lines:
+    if count + len(line) >= LIMIT:
+      splits += [current]
+      count = 0
+    current += line + "\n"
+    count += len(line)
+
+  for split in splits:
+    r = requests.post("https://api.groupme.com/v3/bots/post",
+        {"bot_id": self.bot_id, "text": split})
+  
 
 # this class can *only* read from the group the bot has access to
 class GroupMe():
@@ -325,8 +344,8 @@ class BotEngine(bottle.Bottle):
     else:
       out = "Unrecognized command " + text + ". Ignoring."
 
-    r = requests.post("https://api.groupme.com/v3/bots/post",
-        {"bot_id": self.bot_id, "text": out})
+    send_message(out)
+
       
   def most_common_words(self):
     out = "Most common words:\n"
