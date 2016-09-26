@@ -414,13 +414,13 @@ class BotEngine(bottle.Bottle):
     current = ""
     count = 0
 
-    for line in lines:
-      if count + len(line) >= LIMIT:
+    for word in words:
+      if count + len(word) >= LIMIT:
         splits += [current]
         count = 0
         current = ""
-      current += line + " "
-      count += len(line)
+      current += word + " "
+      count += len(word)
 
     splits += [current]
 
