@@ -405,7 +405,7 @@ class BotEngine(bottle.Bottle):
   def mimic(self, uid):
     names = self.analyzer.names
     out = names[uid]
-    out += ": \"" + str(self.generator.generate(uid, 30, cut=False)) + "\""
+    out += ": \"" + self.generator.generate(uid, 30, cut=False).encode('utf-8') + "\""
     return out
 
   def send_message(self, message):
