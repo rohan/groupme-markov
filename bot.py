@@ -429,6 +429,10 @@ class BotEngine(bottle.Bottle):
           {"bot_id": self.bot_id, "text": split})
     
 
+reload(sys)
+sys.setdefaultencoding("utf-8")
+
+
 convo = GroupMe("./auth_key")
 names = convo.get_all_names()
 messages = convo.get_all_messages()
