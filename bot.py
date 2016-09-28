@@ -430,7 +430,7 @@ class BotEngine(bottle.Bottle):
 
     splits += [current]
 
-    for split in splits:
+    for split in splits[:5]:
       r = requests.post("https://api.groupme.com/v3/bots/post",
           {"bot_id": self.bot_id, "text": split})
 
