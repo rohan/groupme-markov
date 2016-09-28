@@ -436,7 +436,6 @@ class BotEngine(bottle.Bottle):
 
 
   def search(self, string, user=None):
-    name = self.analyzer.names[user]
     if user is None:
       corpus = self.analyzer.messages
     else:
@@ -444,7 +443,7 @@ class BotEngine(bottle.Bottle):
 
     out = "Search results for query \"" + string + "\":\n"
 
-    out += "\n".join([name + " (" + format_date(int(m["created_at"])) + "): " +
+    out += "\n".join([m["name"] + " (" + format_date(int(m["created_at"])) + "): " +
       m["text"] for m in corpus if string in m["text"]])
 
     return out
