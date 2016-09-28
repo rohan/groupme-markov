@@ -30,7 +30,7 @@ def progress(cur, tot):
   sys.stdout.flush()
 
 def format_date(ms):
-  return datetime.fromtimestamp(ms/1000.0).strftime("%Y-%m-%d %H:%M")
+  return datetime.fromtimestamp(ms).strftime("%Y-%m-%d %H:%M")
 
 
 # this class can *only* read from the group the bot has access to
