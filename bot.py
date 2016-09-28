@@ -29,6 +29,9 @@ def progress(cur, tot):
   sys.stdout.write('%s\r' % out)
   sys.stdout.flush()
 
+def format_date(ms):
+  return datetime.fromtimestamp(ms/1000.0).strftime("%Y-%m-%d %H:%M")
+
 
 # this class can *only* read from the group the bot has access to
 class GroupMe():
@@ -321,8 +324,11 @@ class BotEngine(bottle.Bottle):
 /bot ego: gets list of people who've liked their own messages
 /bot help: prints this message
 """
-    elif "love" in command:
+    elif command[1:] == "find me true love":
       out = "I can't provide love, but I can provide the next best thing: http://lmgtfy.com/?q=porn"
+    elif command[1] == "search":
+      query = " ".join(command[2:])
+      out = self.search(query)
     else:
       out = "Unrecognized command " + text + ". Ignoring."
 
@@ -427,7 +433,21 @@ class BotEngine(bottle.Bottle):
     for split in splits:
       r = requests.post("https://api.groupme.com/v3/bots/post",
           {"bot_id": self.bot_id, "text": split})
-    
+
+
+  def search(self, string, user=None):
+    name = self.analyzer.names[user]
+    if user is None:
+      corpus = self.analyzer.messages
+    else:
+      corpus = self.analyzer.messages_by_user[user]
+
+    out = "Search results for query \"" + string + "\":\n"
+
+    out += "\n".join([name + " (" + format_date(int(m["created_at"])) + "): " +
+      m["text"] for m in corpus if string in m["text"]])
+
+    return out
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
