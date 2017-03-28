@@ -307,6 +307,21 @@ class BotEngine(bottle.Bottle):
           out = "Unrecognized command " + text + ". Ignoring."
       else:
         out = "Unrecognized command " + text + ". Ignoring."
+    elif command[1] == "ratio":
+      if len(command) >= 4:
+        if command[2] == "for":
+          if command[3] == "me":
+            out = self.ratio(sid)
+          else:
+            uid = self.get_uid(" ".join(command[3:]))
+            if uid is None:
+              out = "Unable to find user " + " ".join(command[3:]) + "."
+            else:
+              out = self.ratio(uid)
+        else:
+          out = "Unrecognized command " + text + ". Ignoring."
+      else:
+        out = "Unrecognized command " + text + ". Ignoring."
     elif command[1] == "ego":
       if len(command) == 2:
         out = self.self_likers()
@@ -323,6 +338,8 @@ class BotEngine(bottle.Bottle):
 /bot likes to <x>: gets list of people who like <x>
 /bot search <x>: search for <x>
 /bot ego: gets list of people who've liked their own messages
+/bot rank: ranks people by likes received/given
+/bot ratio for <x>: likes received/message sent
 /bot help: prints this message
 """
     elif command[1:] == "find me true love":
@@ -343,13 +360,9 @@ class BotEngine(bottle.Bottle):
   def rank(self):
     names = self.analyzer.names
 
-    print self.analyzer.likes_per_user
-
     lpu = {k: sum(self.analyzer.likes_per_user[k].values()) for k in
       self.analyzer.likes_per_user.keys()}
 
-    print lpu
-    
     out = "These users have received the most likes overall:\n"
 
     for name, likes in sorted(lpu.items(), key=lambda (n, l): l,
@@ -423,6 +436,16 @@ class BotEngine(bottle.Bottle):
     out += "\n".join([names[uid] + " [" + str(likes[uid]) + "]" for uid in
       sorted(likes, key=likes.get, reverse=True)[:15]])
     out += "\n"
+
+    return out
+
+  def ratio(self, uid):
+    names = self.analyzer.names
+    likes = self.analyzer.likes_per_user[uid]
+    messsages = self.analyzer.messages_by_user[uid]
+
+    out = names[uid] + " has a likes/messages ratio of " +
+    ('%.2f' % sum(likes.values() / len(messages))) + "."
 
     return out
 
