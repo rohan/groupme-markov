@@ -346,7 +346,7 @@ class BotEngine(bottle.Bottle):
     print names[0], self.analyer.likes_per_user[self.get_uid(names[0])]
 
     lpu = {name: sum(self.analyzer.likes_per_user[self.get_uid(name)].values()) for name in
-      names]}
+      names}
     
     out = "These users have received the most likes overall:\n"
 
@@ -357,7 +357,7 @@ class BotEngine(bottle.Bottle):
     out += "\nThese users have liked the most messages overall:\n"
       
     likes = {name: sum(self.analyzer.user_likes[self.get_uid(name)].values()) for name in
-      names]}
+      names}
 
     for name, likes in sorted(likes.items(), key=lambda (n, l): l,
         reverse=True)[:15]:
