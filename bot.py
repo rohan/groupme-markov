@@ -235,8 +235,8 @@ class BotEngine(bottle.Bottle):
     if not text.startswith("/bot"):
       # read this in as a normal message
       msg["favorited_by"] = []
-      analyzer.read_message(msg)
-      generator.read_message(msg)
+      self.analyzer.read_message(msg)
+      self.generator.read_message(msg)
       return
 
     # acceptable commands:
@@ -476,17 +476,21 @@ class BotEngine(bottle.Bottle):
 
     return out
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
+def main():
+	reload(sys)
+	sys.setdefaultencoding("utf-8")
 
 
-convo = GroupMe("./auth_key")
-names = convo.get_all_names()
-messages = convo.get_all_messages()
+	convo = GroupMe("./auth_key")
+	names = convo.get_all_names()
+	messages = convo.get_all_messages()
 
-analyzer = Analyzer(names, messages)
-generator = Generator(7, messages)
+	analyzer = Analyzer(names, messages)
+	generator = Generator(7, messages)
 
-bot = BotEngine(BOT_ID, analyzer, generator)
-bot.run(host='0.0.0.0', port=8080)
+	bot = BotEngine(BOT_ID, analyzer, generator)
+	bot.run(host='0.0.0.0', port=8080)
+
+if __name__ == "__main__":
+	main()
 
