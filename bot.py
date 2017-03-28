@@ -378,6 +378,16 @@ class BotEngine(bottle.Bottle):
         reverse=True)[:15]:
       out += "\t" + names[name] + " [" + str(likes) + "]\n"
 
+    out += "\nThese users have the highest like-to-message ratio:\n"
+
+    ratios = {k: sum(float(self.analyzer.likes_per_user[k].values()) /
+        len(self.analyzer.messages_by_user[k])) for k in
+        self.analyzer.likes_per_user.keys()}
+
+    for name, ratio in sorted(ratios.items(), key=lambda(n, r): r,
+            reverse=True)[:15]:
+      out += "\t" + names[name] + " [" + ('%.2f' % ratio) + "]\n"
+
     return out
 
   def most_common_words(self):
@@ -445,7 +455,7 @@ class BotEngine(bottle.Bottle):
     messsages = self.analyzer.messages_by_user[uid]
 
     out = names[uid] + " has a likes/messages ratio of " +
-    ('%.2f' % sum(likes.values() / len(messages))) + "."
+    ('%.2f' % float(sum(likes.values())) / len(messages)) + "."
 
     return out
 
@@ -504,19 +514,19 @@ class BotEngine(bottle.Bottle):
     return out
 
 def main():
-	reload(sys)
-	sys.setdefaultencoding("utf-8")
+    reload(sys)
+    sys.setdefaultencoding("utf-8")
 
 
-	convo = GroupMe("./auth_key")
-	names = convo.get_all_names()
-	messages = convo.get_all_messages()
+    convo = GroupMe("./auth_key")
+    names = convo.get_all_names()
+    messages = convo.get_all_messages()
 
-	analyzer = Analyzer(names, messages)
-	generator = Generator(7, messages)
+    analyzer = Analyzer(names, messages)
+    generator = Generator(7, messages)
 
-	bot = BotEngine(BOT_ID, analyzer, generator)
-	bot.run(host='0.0.0.0', port=8080)
+    bot = BotEngine(BOT_ID, analyzer, generator)
+    bot.run(host='0.0.0.0', port=8080)
 
 if __name__ == "__main__":
 	main()
