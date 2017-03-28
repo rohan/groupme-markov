@@ -452,7 +452,7 @@ class BotEngine(bottle.Bottle):
   def ratio(self, uid):
     names = self.analyzer.names
     likes = self.analyzer.likes_per_user[uid]
-    messsages = self.analyzer.messages_by_user[uid]
+    messages = self.analyzer.messages_by_user[uid]
 
     out = names[uid] + " has a likes/messages ratio of " +
     ('%.2f' % float(sum(likes.values())) / len(messages)) + "."
