@@ -321,6 +321,7 @@ class BotEngine(bottle.Bottle):
 /bot words for me: gets sender's words
 /bot likes from <x>: gets list of people <x> has liked
 /bot likes to <x>: gets list of people who like <x>
+/bot search <x>: search for <x>
 /bot ego: gets list of people who've liked their own messages
 /bot help: prints this message
 """
@@ -329,12 +330,39 @@ class BotEngine(bottle.Bottle):
     elif command[1] == "search":
       query = " ".join(command[2:])
       out = self.search(query)
+    elif command[1] == "rank":
+        if len(command) == 2:
+            out = self.rank()
+        else:
+            out = "Unrecognized command " + text + ". Ignoring."
     else:
       out = "Unrecognized command " + text + ". Ignoring."
 
     self.send_message(out)
 
+  def rank(self):
+    names = self.analyzer.names
+
+    lpu = {name: sum(self.analyzer.likes_per_user[self.get_uid(name)].values()) for name in
+      names]}
+    
+    out = "These users have received the most likes overall:\n"
+
+    for name, likes in sorted(lpu.items(), key=lambda (n, l): l,
+        reverse=True)[:15]:
+      out += "\t" + name + "[" + str(likes) + "]\n"
+
+    out += "\nThese users have liked the most messages overall:\n"
       
+    likes = {name: sum(self.analyzer.user_likes[self.get_uid(name)].values()) for name in
+      names]}
+
+    for name, likes in sorted(likes.items(), key=lambda (n, l): l,
+        reverse=True)[:15]:
+      out += "\t" + name + "[" + str(likes) + "]\n"
+
+    return out
+
   def most_common_words(self):
     out = "Most common words:\n"
     words = self.analyzer.most_common_words
