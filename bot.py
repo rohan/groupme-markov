@@ -376,8 +376,8 @@ class BotEngine(bottle.Bottle):
             out = "Unable to find user " + " ".join(command[2:]) + "."
           else:
             out = self.rank_user(uid)
-        else:
-          out = "Unrecognized command " + text + ". Ignoring."
+      else:
+        out = "Unrecognized command " + text + ". Ignoring."
     else:
       out = "Unrecognized command " + text + ". Ignoring."
 
