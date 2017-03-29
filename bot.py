@@ -406,7 +406,7 @@ class BotEngine(bottle.Bottle):
 
     out += "\nThese users have the highest like-to-message ratio:\n"
 
-    ratios = {k: sum(float(self.analyzer.likes_per_user[k].values()) /
+    ratios = {k: float(sum(self.analyzer.likes_per_user[k].values()) /
         len(self.analyzer.messages_by_user[k])) for k in
         self.analyzer.likes_per_user.keys()}
 
@@ -422,8 +422,7 @@ class BotEngine(bottle.Bottle):
     lpu = {k: sum(self.analyzer.likes_per_user[k].values()) for k in
       self.analyzer.likes_per_user.keys()}
 
-    out = names[uid] + " has liked " + str(lpu[uid]) + " messages, making them the "
-    \
+    out = names[uid] + " has liked " + str(lpu[uid]) + " messages, making them the "\
             + format_rank(rank_user(lpu, uid)) + " most frequent liker.\n"
 
 
