@@ -260,15 +260,6 @@ class BotEngine(bottle.Bottle):
       self.generator.read_message(msg)
       return
 
-    # acceptable commands:
-    # /bot ping: returns "hello world"
-    # /bot words: returns most common words
-    # /bot words for <x>: takes a name and gets their words
-    # /bot words for me: gets sender's words
-    # /bot likes from <x>: gets list of people <x> has liked
-    # /bot likes to <x>: gets list of people who like <x>
-    # /bot ego: gets list of people who've liked their own messages
-
     command = text.split(" ")
     out = ""
     if command[1] == "ping":
@@ -289,6 +280,7 @@ class BotEngine(bottle.Bottle):
             out = self.mimic(uid)
       else:
         out = "Unrecognized command " + text + ". Ignoring."
+
     elif command[1] == "words":
       if len(command) == 2:
         out = self.most_common_words()
@@ -303,6 +295,7 @@ class BotEngine(bottle.Bottle):
             out = self.most_common_words_for_user(uid)
       else:
         out = "Unrecognized command " + text + ". Ignoring."
+
     elif command[1] == "likes":
       if len(command) >= 4:
         if command[2] == "from":
@@ -328,6 +321,7 @@ class BotEngine(bottle.Bottle):
           out = "Unrecognized command " + text + ". Ignoring."
       else:
         out = "Unrecognized command " + text + ". Ignoring."
+
     elif command[1] == "ratio":
       if len(command) >= 4:
         if command[2] == "for":
@@ -343,6 +337,7 @@ class BotEngine(bottle.Bottle):
           out = "Unrecognized command " + text + ". Ignoring."
       else:
         out = "Unrecognized command " + text + ". Ignoring."
+
     elif command[1] == "ego":
       if len(command) == 2:
         out = self.self_likers()
@@ -368,11 +363,21 @@ class BotEngine(bottle.Bottle):
     elif command[1] == "search":
       query = " ".join(command[2:])
       out = self.search(query)
+
     elif command[1] == "rank":
-        if len(command) == 2:
-            out = self.rank()
+      if len(command) == 2:
+          out = self.rank()
+      elif len(command) >= 3:
+        if command[2] == "me":
+          out = self.rank_user(sid)
         else:
-            out = "Unrecognized command " + text + ". Ignoring."
+          uid = self.get_uid(" ".join(command[2:]))
+          if uid is None:
+            out = "Unable to find user " + " ".join(command[2:]) + "."
+          else:
+            out = self.rank_user(uid)
+        else:
+          out = "Unrecognized command " + text + ". Ignoring."
     else:
       out = "Unrecognized command " + text + ". Ignoring."
 
