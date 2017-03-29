@@ -423,14 +423,14 @@ class BotEngine(bottle.Bottle):
       self.analyzer.likes_per_user.keys()}
 
     out = names[uid] + " has liked " + str(lpu[uid]) + " messages, making them the "\
-            + format_rank(rank_user(lpu, uid)) + " most frequent liker.\n"
+            + format_rank(rank_user(lpu, uid)) + " most frequently liked user.\n"
 
     likes = {k: sum(self.analyzer.user_likes[k].values()) for k in
       self.analyzer.user_likes.keys()}
 
     out += "They've gotten " + str(likes[uid]) + " likes on their messages, making \
-            them the " + format_rank(rank_user(likes, uid)) + " most frequently\
-             liked user.\n"
+            them the " + format_rank(rank_user(likes, uid)) + " most frequent\
+             liker.\n"
 
     ratios = {k: float(sum(self.analyzer.likes_per_user[k].values())) /
         len(self.analyzer.messages_by_user[k]) for k in
