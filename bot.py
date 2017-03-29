@@ -37,7 +37,7 @@ def rank_user(dct, userid):
 
   s = sorted(dct.items(), key=lambda (b,c): c, reverse=True)
   try:
-      return (i for i, (uid, val) in enumerate(s) if uid == userid).next()
+      return (i for i, (uid, val) in enumerate(s) if uid == userid).next() + 1
   except StopIteration:
       return -1
 
@@ -425,7 +425,6 @@ class BotEngine(bottle.Bottle):
     out = names[uid] + " has liked " + str(lpu[uid]) + " messages, making them the "\
             + format_rank(rank_user(lpu, uid)) + " most frequent liker.\n"
 
-
     likes = {k: sum(self.analyzer.user_likes[k].values()) for k in
       self.analyzer.user_likes.keys()}
 
@@ -438,7 +437,7 @@ class BotEngine(bottle.Bottle):
         self.analyzer.likes_per_user.keys()}
 
     out += "Their like/message ratio is " + ('%.2f' % ratios[uid]) + ", giving \
-            them the " + format_rank(rank_user(lpu, uid)) + " highest ratio."
+            them the " + format_rank(rank_user(ratios, uid)) + " highest ratio."
 
     return out
 
@@ -506,8 +505,7 @@ class BotEngine(bottle.Bottle):
     likes = self.analyzer.likes_per_user[uid]
     messages = self.analyzer.messages_by_user[uid]
 
-    out = names[uid] + " has a likes/messages ratio of " + \
-    ('%.2f' % float(sum(likes.values())) / len(messages)) + "."
+    out = names[uid] + " has a likes/messages ratio of " + ('%.2f' % float(sum(likes.values())) / len(messages)) + "."
 
     return out
 
