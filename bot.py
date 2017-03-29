@@ -35,7 +35,7 @@ def format_date(ms):
 def rank_user(dct, userid):
   # given a dict from uid -> value, find the rank of uid in dict
 
-  s = sorted(dct.items(), key=lambda (a, (b,c)): c, reverse=True)
+  s = sorted(dct.items(), key=lambda (b,c): c, reverse=True)
   try:
       return (i for i, (uid, val) in enumerate(s) if uid == userid).next()
   except StopIteration:
