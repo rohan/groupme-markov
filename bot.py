@@ -406,8 +406,8 @@ class BotEngine(bottle.Bottle):
 
     out += "\nThese users have the highest like-to-message ratio:\n"
 
-    ratios = {k: float(sum(self.analyzer.likes_per_user[k].values()) /
-        len(self.analyzer.messages_by_user[k])) for k in
+    ratios = {k: float(sum(self.analyzer.likes_per_user[k].values())) /
+        len(self.analyzer.messages_by_user[k]) for k in
         self.analyzer.likes_per_user.keys()}
 
     for name, ratio in sorted(ratios.items(), key=lambda(n, r): r,
@@ -433,8 +433,8 @@ class BotEngine(bottle.Bottle):
             them the " + format_rank(rank_user(likes, uid)) + " most frequently\
              liked user.\n"
 
-    ratios = {k: sum(float(self.analyzer.likes_per_user[k].values()) /
-        len(self.analyzer.messages_by_user[k])) for k in
+    ratios = {k: float(sum(self.analyzer.likes_per_user[k].values())) /
+        len(self.analyzer.messages_by_user[k]) for k in
         self.analyzer.likes_per_user.keys()}
 
     out += "Their like/message ratio is " + ('%.2f' % ratios[uid]) + ", giving \
