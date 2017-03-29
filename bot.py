@@ -32,6 +32,27 @@ def progress(cur, tot):
 def format_date(ms):
   return datetime.fromtimestamp(ms).strftime("%Y-%m-%d %H:%M")
 
+def rank_user(dct, userid):
+  # given a dict from uid -> value, find the rank of uid in dict
+
+  s = sorted(dct.items(), key=lambda (a, (b,c)): c, reverse=True)
+  try:
+      return (i for i, (uid, val) in enumerate(s) if uid == userid).next()
+  except StopIteration:
+      return -1
+
+def format_rank(rank):
+    out = str(rank)
+
+    if rank % 10 == 1 or rank == -1:
+        return out + "st"
+    elif rank % 10 == 2:
+        return out + "nd"
+    elif rank % 10 == 3:
+        return out + "rd"
+
+    return out + "th"
+
 
 # this class can *only* read from the group the bot has access to
 class GroupMe():
@@ -390,6 +411,33 @@ class BotEngine(bottle.Bottle):
 
     return out
 
+  def rank_user(self, uid):
+    names = self.analyzer.names
+
+    lpu = {k: sum(self.analyzer.likes_per_user[k].values()) for k in
+      self.analyzer.likes_per_user.keys()}
+
+    out = names[uid] + " has liked " + str(lpu[uid]) + " messages, making them the "
+    \
+            + format_rank(rank_user(lpu, uid)) + " most frequent liker.\n"
+
+
+    likes = {k: sum(self.analyzer.user_likes[k].values()) for k in
+      self.analyzer.user_likes.keys()}
+
+    out += "They've gotten " + str(likes[uid]) + " likes on their messages, making \
+            them the " + format_rank(rank_user(likes, uid)) + " most frequently\
+             liked user.\n"
+
+    ratios = {k: sum(float(self.analyzer.likes_per_user[k].values()) /
+        len(self.analyzer.messages_by_user[k])) for k in
+        self.analyzer.likes_per_user.keys()}
+
+    out += "Their like/message ratio is " + ('%.2f' % ratios[uid]) + ", giving \
+            them the " + format_rank(rank_user(lpu, uid)) + " highest ratio."
+
+    return out
+
   def most_common_words(self):
     out = "Most common words:\n"
     words = self.analyzer.most_common_words
@@ -454,7 +502,7 @@ class BotEngine(bottle.Bottle):
     likes = self.analyzer.likes_per_user[uid]
     messages = self.analyzer.messages_by_user[uid]
 
-    out = names[uid] + " has a likes/messages ratio of " +
+    out = names[uid] + " has a likes/messages ratio of " + \
     ('%.2f' % float(sum(likes.values())) / len(messages)) + "."
 
     return out
