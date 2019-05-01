@@ -2,3 +2,5 @@
 *.pyc
 auth_key
 *.pickle
+.idea
+.venv
