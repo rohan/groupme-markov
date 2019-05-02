@@ -129,7 +129,7 @@ class BotEngine(bottle.Bottle):
                     self.database.get_name(_uid) for _uid in sorted(liked, key=liked.get, reverse=True)[:15]]))
         elif direction == "to":
             likes = self.analyzer.likes_per_user[uid]
-            return "{}'s messages have been liked a total of {} times, most frequently by: {}".format(
+            return "{} has received {} likes, most frequently from: {}".format(
                 self.database.get_name(uid), sum(likes.values()), ", ".join([
                     self.database.get_name(_uid) for _uid in sorted(likes, key=likes.get, reverse=True)[:15]]))
         else:
@@ -170,10 +170,7 @@ class BotEngine(bottle.Bottle):
                            self.analyzer.get_highest_overall_ratio()])
             )
 
-        if len(command) < 4:
-            return _unrecognized_command(message, "/bot likes from {user} or /bot likes to {user}")
-
-        name = " ".join(command[3:])
+        name = " ".join(command[2:])
         uid = message['user_id'] if name == "me" else self.database.get_uid(name)
         if not uid:
             return _unrecognized_user(name)
@@ -203,11 +200,11 @@ class BotEngine(bottle.Bottle):
             self.generator.read_message(msg)
             return
 
-        command = _process(msg)
-        if command[1:] == "find me true love":
+        if text == "/bot find me true love":
             return self.send_message(
                 "I can't provide love, but I can provide the next best thing: http://lmgtfy.com/?q=porn")
 
+        command = _process(msg)
         directive = command[1]
 
         fn = {
