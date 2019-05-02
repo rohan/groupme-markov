@@ -4,6 +4,7 @@ import os
 import dataset
 import requests
 from dataset import Table
+from tqdm import tqdm
 
 
 class GroupMe:
@@ -68,6 +69,9 @@ class GroupMe:
         if not message_table.delete():
             raise Exception("Unable to clear existing table.")
         r = requests.get(self.messages_url, params={"token": self.key, "limit": 100})
+        count = r.json()['response']['count']
+        pbar = tqdm(total=count)
+
         while r.status_code is 200:
             messages = r.json()['response']['messages']
 
@@ -79,6 +83,9 @@ class GroupMe:
 
             last_id = messages[-1]["id"]
             r = requests.get(self.messages_url, params={"token": self.key, "limit": 100, "before_id": last_id})
+            pbar.update(len(messages))
+
+        pbar.close()
 
     def recreate_all_names(self, txn):
         users = txn[self.user_table]
