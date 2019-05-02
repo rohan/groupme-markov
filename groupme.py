@@ -25,7 +25,7 @@ class GroupMe:
         self.messages_url = "https://api.groupme.com/v3/groups/{}/messages".format(self.gid)
 
         self.message_table: Table = db['Message']
-        self.user_table: Table = b['User']
+        self.user_table: Table = db['User']
 
     def receive_message(self, message):
         if message["system"] or message["text"] is None:
