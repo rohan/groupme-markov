@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 
@@ -97,14 +98,15 @@ class GroupMe:
             })
 
     def messages(self):
-        return self.message_table.find()
+        return self.message_table.find(group_id=self.gid)
 
     def get_name(self, uid):
-        user = self.user_table.find_one(user_id=uid)
+        user = self.user_table.find_one(user_id=uid, group_id=self.gid)
         return user['name'] if user else "(former member)"
 
     def get_uid(self, name):
-        user = self.user_table.find_one(name=name)
+        user = (self.user_table.find_one(name=name, group_id=self.gid)
+                or self.user_table.find_one(nickname=name, group_id=self.gid))
         return user['user_id'] if user else None
 
 
@@ -113,7 +115,15 @@ if __name__ == "__main__":
     with open(filename, "r") as config_file:
         config_dict = json.loads(config_file.read())
 
+    parser = argparse.ArgumentParser(description='Refresh GroupMe database.')
+    parser.add_argument('--users', type=bool, dest='users', help="Refresh users database.")
+    parser.add_argument('--messages', type=bool, dest='messages', help="Refresh messages database.")
+
+    args = parser.parse_args()
+
     db = dataset.connect()
     gm = GroupMe(db, config_dict)
-    gm.recreate_all_names()
-    gm.recreate_messages()
+    if args.users:
+        gm.recreate_all_names()
+    if args.messages:
+        gm.recreate_messages()

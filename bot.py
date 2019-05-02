@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 
@@ -22,8 +23,7 @@ HELP_MESSAGE = """Hi! I'm a simple GroupMe bot. Here's what I can do:
 /bot likes from <x>: gets list of people <x> has liked
 /bot likes to <x>: gets list of people who like <x>
 /bot ego: gets list of people who've liked their own messages
-/bot rank by received: ranks people by likes received
-/bot rank by given: ranks people by likes given
+/bot rank: ranks everyone
 /bot rank <x>: ranks <x> overall
 /bot ratio for <x>: likes received/message sent
 /bot find me true love: finds you true love <3
@@ -65,7 +65,7 @@ def _format_rank(rank):
 
 
 class BotEngine(bottle.Bottle):
-    def __init__(self, config_dict, analyzer: Analyzer, generator: Generator, database: GroupMe):
+    def __init__(self, config_dict, analyzer: Analyzer, generator: Generator, database: GroupMe, console_mode=False):
         super(BotEngine, self).__init__()
         self.post('/groupme/callback', callback=self.receive)
 
@@ -76,6 +76,8 @@ class BotEngine(bottle.Bottle):
         self.analyzer = analyzer
         self.generator = generator
         self.database = database
+
+        self.console_mode = console_mode
 
     def ping(self, message):
         return "Hello, world!"
@@ -189,8 +191,8 @@ class BotEngine(bottle.Bottle):
             ratio=ratio, ratio_rank=_format_rank(ratio_rank)
         )
 
-    def receive(self):
-        msg = bottle.request.json
+    def receive(self, msg=None):
+        msg = msg or bottle.request.json
         text = msg["text"]
         if not text.startswith("/bot"):
             # read this in as a normal message
@@ -240,10 +242,13 @@ class BotEngine(bottle.Bottle):
         splits += [current]
 
         for split in splits[:5]:
-            requests.post("https://api.groupme.com/v3/bots/post", {"bot_id": self.bot_id, "text": split})
+            if self.console_mode:
+                print(split)
+            else:
+                requests.post("https://api.groupme.com/v3/bots/post", {"bot_id": self.bot_id, "text": split})
 
 
-def main():
+def main(console_mode=False):
     filename = os.path.join(os.path.dirname(__file__), "config.json")
     with open(filename, "r") as config_file:
         config_dict = json.loads(config_file.read())
@@ -257,9 +262,17 @@ def main():
     analyzer.rebuild()
     generator.rebuild()
 
-    bot = BotEngine(config_dict, analyzer, generator, database)
-    bot.run(host='0.0.0.0')
+    bot = BotEngine(config_dict, analyzer, generator, database, console_mode=console_mode)
+    if console_mode:
+        while True:
+            cmd = input("Enter your command: ")
+            bot.receive({'text': cmd, 'favorited_by': [], 'user_id': "6744840"})
+    else:
+        bot.run(host='0.0.0.0')
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Run GroupMe bot.')
+    parser.add_argument('--console', dest='console_mode', type=bool, help="Run in console mode.")
+    args = parser.parse_args()
+    main(console_mode=args.console_mode)
