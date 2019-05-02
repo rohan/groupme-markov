@@ -14,12 +14,12 @@ class Generator:
 
     def rebuild(self):
         for message in self.database.messages():
-            self.read_message(message)
+            self.read_message(json.loads(message['object']))
 
     def read_message(self, message):
         text = message['text']
         sender = message['user_id']
-        likes = len(json.loads(message['favorited_by']))
+        likes = len(message['favorited_by'])
         words = text.split(" ")
 
         for i in range(len(words) - self.k):
