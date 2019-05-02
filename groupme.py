@@ -119,10 +119,8 @@ if __name__ == "__main__":
         config_dict = json.loads(config_file.read())
 
     parser = argparse.ArgumentParser(description='Refresh GroupMe database.')
-    parser.add_argument(
-        '--users', type=bool, dest='users', action='store_const', const=True, help="Refresh users database.")
-    parser.add_argument(
-        '--messages', type=bool, dest='messages', action='store_const', const=True, help="Refresh messages database.")
+    parser.add_argument('--users', dest='users', action='store_true', help="Refresh users database.")
+    parser.add_argument('--messages', dest='messages', action='store_true', help="Refresh messages database.")
 
     args = parser.parse_args()
 
