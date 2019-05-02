@@ -180,7 +180,7 @@ class BotEngine(bottle.Bottle):
         ratio, ratio_rank = self.analyzer.get_ratio_and_rank(uid)
 
         return """Messages {name} sent that people have liked: {like_recd_count} ({like_recd_rank} overall)
-        Messages people have sent that {name} like: {like_sent_count} ({like_sent_rank} overall)
+        Messages people have sent that {name} liked: {like_sent_count} ({like_sent_rank} overall)
         Like/message ratio: {ratio:.2f} ({ratio_rank} overall)
                 """.format(
             name=self.database.get_name(uid),
