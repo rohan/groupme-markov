@@ -1,6 +1,7 @@
 import json
 import os
 
+import dataset
 import requests
 from dataset import Table
 
@@ -63,6 +64,9 @@ class GroupMe:
             r = requests.get(self.messages_url, params={'token': self.key, 'limit': 100, 'after_id': last_id})
 
     def recreate_messages(self, txn):
+        message_table: Table = txn[self.message_table]
+        if not message_table.delete():
+            raise Exception("Unable to clear existing table.")
         r = requests.get(self.messages_url, params={"token": self.key, "limit": 100})
         while r.status_code is 200:
             messages = r.json()['response']['messages']
@@ -95,3 +99,14 @@ class GroupMe:
     def names(self, txn):
         users_table: Table = txn[self.user_table]
         return users_table.find()
+
+
+if __name__ == "__main__":
+    filename = os.path.join(os.path.dirname(__file__), "config.json")
+    with open(filename, "r") as config_file:
+        config_dict = json.loads(config_file.read())
+
+    gm = GroupMe(config_dict)
+    with dataset.connect() as txn:
+        gm.recreate_messages(txn)
+        gm.recreate_all_names(txn)
