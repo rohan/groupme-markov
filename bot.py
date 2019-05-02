@@ -45,6 +45,10 @@ def _unrecognized_user(name):
     return "Unknown user {}.".format(name)
 
 
+def _error(exception):
+    return "Oops! We fucked up. Here's the error: {}".format(exception)
+
+
 def _process(message):
     return message['text'].strip().split(" ")
 
@@ -219,7 +223,10 @@ class BotEngine(bottle.Bottle):
             'help': lambda *args, **kwargs: HELP_MESSAGE,
         }.get(directive, _unrecognized_directive)
 
-        return self.send_message(fn(msg))
+        try:
+            return self.send_message(fn(msg))
+        except Exception as e:
+            return self.send_message(_error(e))
 
     def send_message(self, message):
         words = message.split(" ")
