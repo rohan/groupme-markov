@@ -226,7 +226,8 @@ Like/message ratio: {ratio:.2f} ({ratio_rank} overall)
         try:
             return self.send_message(fn(msg))
         except Exception as e:
-            return self.send_message(_error(e))
+            self.send_message(_error(e))
+            raise e
 
     def send_message(self, message):
         words = message.split(" ")
