@@ -273,6 +273,7 @@ def main(console_mode=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run GroupMe bot.')
-    parser.add_argument('--console', dest='console_mode', type=bool, help="Run in console mode.")
+    parser.add_argument(
+        '--console', dest='console_mode', type=bool, action='store_const', const=True, help="Run in console mode.")
     args = parser.parse_args()
     main(console_mode=args.console_mode)

@@ -86,13 +86,16 @@ class GroupMe:
         pbar.close()
 
     def recreate_all_names(self):
+        self.user_table.delete()
+
         r = requests.get("https://api.groupme.com/v3/groups/{}".format(self.gid), params={"token": self.key})
         resp = r.json()["response"]
 
         for member in resp["members"]:
             self.user_table.insert({
                 'user_id': member['user_id'],
-                'name': member['nickname'],
+                'nickname': member['nickname'],
+                'name': member['name'],
                 'group_id': self.gid,
                 'object': json.dumps(member)
             })
@@ -116,8 +119,10 @@ if __name__ == "__main__":
         config_dict = json.loads(config_file.read())
 
     parser = argparse.ArgumentParser(description='Refresh GroupMe database.')
-    parser.add_argument('--users', type=bool, dest='users', help="Refresh users database.")
-    parser.add_argument('--messages', type=bool, dest='messages', help="Refresh messages database.")
+    parser.add_argument(
+        '--users', type=bool, dest='users', action='store_const', const=True, help="Refresh users database.")
+    parser.add_argument(
+        '--messages', type=bool, dest='messages', action='store_const', const=True, help="Refresh messages database.")
 
     args = parser.parse_args()
 
