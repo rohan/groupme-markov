@@ -168,7 +168,7 @@ Highest like/message ratio: {}""".format(
                            self.analyzer.get_most_overall_likes_sent()]),
                 ", ".join(["{} ({})".format(self.database.get_name(uid), value) for uid, value in
                            self.analyzer.get_most_overall_likes_recd()]),
-                ", ".join(["{} ({})".format(self.database.get_name(uid), value) for uid, value in
+                ", ".join(["{:.2f} ({})".format(self.database.get_name(uid), value) for uid, value in
                            self.analyzer.get_highest_overall_ratio()])
             )
 
