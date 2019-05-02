@@ -122,12 +122,12 @@ class BotEngine(bottle.Bottle):
             return _unrecognized_user(name)
 
         direction = command[2]
-        if direction is "from":
+        if direction == "from":
             liked = self.analyzer.user_likes[uid]
             return "{} has liked a total of {} messages, most frequently from: {}".format(
                 self.database.get_name(uid), sum(liked.values()), ", ".join([
                     self.database.get_name(_uid) for _uid in sorted(liked, key=liked.get, reverse=True)[:15]]))
-        elif direction is "to":
+        elif direction == "to":
             likes = self.analyzer.likes_per_user[uid]
             return "{}'s messages have been liked a total of {} times, most frequently by: {}".format(
                 self.database.get_name(uid), sum(likes.values()), ", ".join([
@@ -204,7 +204,7 @@ class BotEngine(bottle.Bottle):
             return
 
         command = _process(msg)
-        if command[1:] is "find me true love":
+        if command[1:] == "find me true love":
             return self.send_message(
                 "I can't provide love, but I can provide the next best thing: http://lmgtfy.com/?q=porn")
 
