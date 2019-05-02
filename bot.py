@@ -80,20 +80,17 @@ class BotEngine(bottle.Bottle):
     def ping(self, message):
         return "Hello, world!"
 
-    def get_name(self, uid: str) -> str:
-        return self.analyzer.names[uid]
-
     def mimic(self, message):
         command = _process(message)
         if len(command) < 3:
             return _unrecognized_command(message, "/bot mimic {name}")
 
         name = " ".join(command[2:])
-        uid = message['user_id'] if name == "me" else self.analyzer.get_uid(name)
+        uid = message['user_id'] if name == "me" else self.database.get_uid(name)
         if not uid:
             return _unrecognized_user(name)
 
-        return "{}: \"{}\"".format(self.analyzer.names[uid], self.generator.generate(uid, 30, cut=False))
+        return "{}: \"{}\"".format(self.database.get_name(uid), self.generator.generate(uid, 30, cut=False))
 
     def words(self, message):
         command = _process(message)
@@ -106,13 +103,13 @@ class BotEngine(bottle.Bottle):
             return _unrecognized_command(message, "/bot words or /bot words for {name}")
 
         name = " ".join(command[3:])
-        uid = message['user_id'] if name == "me" else self.analyzer.get_uid(name)
+        uid = message['user_id'] if name == "me" else self.database.get_uid(name)
         if not uid:
             return _unrecognized_user(name)
 
         words = self.analyzer.mcw_per_user[uid]
         return "Most common words for {}: {}".format(
-            self.get_name(uid), ", ".join(sorted(words, key=words.get, reverse=True)[:15]))
+            self.database.get_name(uid), ", ".join(sorted(words, key=words.get, reverse=True)[:15]))
 
     def likes(self, message):
         command = _process(message)
@@ -120,7 +117,7 @@ class BotEngine(bottle.Bottle):
             return _unrecognized_command(message, "/bot likes from {user} or /bot likes to {user}")
 
         name = " ".join(command[3:])
-        uid = message['user_id'] if name == "me" else self.analyzer.get_uid(name)
+        uid = message['user_id'] if name == "me" else self.database.get_uid(name)
         if not uid:
             return _unrecognized_user(name)
 
@@ -128,13 +125,13 @@ class BotEngine(bottle.Bottle):
         if direction is "from":
             liked = self.analyzer.user_likes[uid]
             return "{} has liked a total of {} messages, most frequently from: {}".format(
-                self.get_name(uid), sum(liked.values()), ", ".join([
-                    self.get_name(_uid) for _uid in sorted(liked, key=liked.get, reverse=True)[:15]]))
+                self.database.get_name(uid), sum(liked.values()), ", ".join([
+                    self.database.get_name(_uid) for _uid in sorted(liked, key=liked.get, reverse=True)[:15]]))
         elif direction is "to":
             likes = self.analyzer.likes_per_user[uid]
             return "{}'s messages have been liked a total of {} times, most frequently by: {}".format(
-                self.get_name(uid), sum(likes.values()), ", ".join([
-                    self.get_name(_uid) for _uid in sorted(likes, key=likes.get, reverse=True)[:15]]))
+                self.database.get_name(uid), sum(likes.values()), ", ".join([
+                    self.database.get_name(_uid) for _uid in sorted(likes, key=likes.get, reverse=True)[:15]]))
         else:
             return _unrecognized_command(message, "/bot likes from {user} or /bot likes to {user}")
 
@@ -144,7 +141,7 @@ class BotEngine(bottle.Bottle):
             return _unrecognized_command(message, "/bot ratio for {user}")
 
         name = " ".join(command[3:])
-        uid = message['user_id'] if name == "me" else self.analyzer.get_uid(name)
+        uid = message['user_id'] if name == "me" else self.database.get_uid(name)
         if not uid:
             return _unrecognized_user(name)
 
@@ -152,11 +149,12 @@ class BotEngine(bottle.Bottle):
         messages = self.analyzer.messages_by_user[uid]
 
         return "{} has a likes/messages ratio of {:.2f}.".format(
-            self.get_name(uid), float(sum(likes.values())) / len(messages))
+            self.database.get_name(uid), float(sum(likes.values())) / len(messages))
 
     def ego(self, message):
         template = "{} has liked their own posts {} time(s)."
-        return "\n".join(template.format(self.get_name(uid), likes) for uid, likes in self.analyzer.get_self_likes())
+        return "\n".join(
+            template.format(self.database.get_name(uid), likes) for uid, likes in self.analyzer.get_self_likes())
 
     def rank(self, message):
         command = _process(message)
@@ -164,11 +162,11 @@ class BotEngine(bottle.Bottle):
             return """Most likes sent: {}
             Most likes received: {}
             Highest like/message ratio: {}""".format(
-                ", ".join(["{} ({})".format(self.get_name(uid), value) for uid, value in
+                ", ".join(["{} ({})".format(self.database.get_name(uid), value) for uid, value in
                            self.analyzer.get_most_overall_likes_sent()]),
-                ", ".join(["{} ({})".format(self.get_name(uid), value) for uid, value in
+                ", ".join(["{} ({})".format(self.database.get_name(uid), value) for uid, value in
                            self.analyzer.get_most_overall_likes_recd()]),
-                ", ".join(["{} ({})".format(self.get_name(uid), value) for uid, value in
+                ", ".join(["{} ({})".format(self.database.get_name(uid), value) for uid, value in
                            self.analyzer.get_highest_overall_ratio()])
             )
 
@@ -176,7 +174,7 @@ class BotEngine(bottle.Bottle):
             return _unrecognized_command(message, "/bot likes from {user} or /bot likes to {user}")
 
         name = " ".join(command[3:])
-        uid = message['user_id'] if name == "me" else self.analyzer.get_uid(name)
+        uid = message['user_id'] if name == "me" else self.database.get_uid(name)
         if not uid:
             return _unrecognized_user(name)
 
@@ -188,7 +186,7 @@ class BotEngine(bottle.Bottle):
         Messages people have sent that {name} like: {like_sent_count} ({like_sent_rank} overall)
         Like/message ratio: {ratio:.2f} ({ratio_rank} overall)
                 """.format(
-            name=self.get_name(uid),
+            name=self.database.get_name(uid),
             like_recd_count=likes_recd, like_recd_rank=_format_rank(recd_rank),
             like_sent_count=likes_sent, like_sent_rank=_format_rank(sent_rank),
             ratio=ratio, ratio_rank=_format_rank(ratio_rank)

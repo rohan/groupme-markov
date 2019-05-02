@@ -99,8 +99,13 @@ class GroupMe:
     def messages(self):
         return self.message_table.find()
 
-    def names(self):
-        return self.user_table.find()
+    def get_name(self, uid):
+        user = self.user_table.find_one(user_id=uid)
+        return user['name'] if user else "(former member)"
+
+    def get_uid(self, name):
+        user = self.user_table.find_one(name=name)
+        return user['user_id'] if user else None
 
 
 if __name__ == "__main__":

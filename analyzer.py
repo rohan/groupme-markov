@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from operator import itemgetter
 
@@ -61,10 +62,6 @@ class Analyzer:
         for message in self.database.messages():
             self.read_message(message)
 
-    @property
-    def names(self):
-        return self.database.names()
-
     def read_message(self, message):
         sender = message["user_id"]
         self.messages_by_user[sender] += [message]
@@ -77,15 +74,12 @@ class Analyzer:
             self.most_common_words[word][sender] += 1
             self.mcw_per_user[sender][word] += 1
 
-        for liker in message["favorited_by"]:
+        for liker in json.loads(message["favorited_by"]):
             self.user_likes[liker][sender] += 1
             self.likes_per_user[sender][liker] += 1
 
             if liker == sender:
                 self.self_likes[sender] += 1
-
-    def get_uid(self, name: str) -> Optional[str]:
-        return {v: k for (k, v) in self.names.items()}.get(name)
 
     def get_self_likes(self, limit=15):
         return [(uid, self.self_likes[uid]) for uid in sorted(

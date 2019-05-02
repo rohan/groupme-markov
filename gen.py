@@ -1,3 +1,4 @@
+import json
 import random
 from collections import defaultdict
 
@@ -16,16 +17,15 @@ class Generator:
             self.read_message(message)
 
     def read_message(self, message):
-        self.read_input(message["text"], message["user_id"],
-                        len(message["favorited_by"]) + 1)
-
-    def read_input(self, message, sender, likes):
-        words = message.split(" ")
+        text = message['text']
+        sender = message['user_id']
+        likes = len(json.loads(message['favorited_by']))
+        words = text.split(" ")
 
         for i in range(len(words) - self.k):
             # store every k-length interval
             window = " ".join(words[i:i + self.k])
-            self.m[sender][window] += [words[i + self.k]] * likes
+            self.m[sender][window] += [words[i + self.k]] * (likes + 1)
 
         # make sure the last interval exists as well
         window = " ".join(words[(-1 * self.k):])
