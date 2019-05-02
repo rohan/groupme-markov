@@ -89,24 +89,24 @@ class Analyzer:
         likes_sent_per_user: Dict[str, int] = {k: sum(self.user_likes[k].values()) for k in self.user_likes}
         return likes_sent_per_user[uid], rank_in_dict(likes_sent_per_user, uid)
 
-    def get_most_overall_likes_sent(self):
+    def get_most_overall_likes_sent(self, limit=15):
         likes_sent_per_user: Dict[str, int] = {k: sum(self.user_likes[k].values()) for k in self.user_likes}
-        return sorted(likes_sent_per_user.items(), key=itemgetter(1), reverse=True)
+        return sorted(likes_sent_per_user.items(), key=itemgetter(1), reverse=True)[:limit]
 
     def get_likes_received_and_rank(self, uid):
         likes_recd_per_user: Dict[str, int] = {k: sum(self.likes_per_user[k].values()) for k in self.likes_per_user}
         return likes_recd_per_user[uid], rank_in_dict(likes_recd_per_user, uid)
 
-    def get_most_overall_likes_recd(self):
+    def get_most_overall_likes_recd(self, limit=15):
         likes_recd_per_user: Dict[str, int] = {k: sum(self.likes_per_user[k].values()) for k in self.likes_per_user}
-        return sorted(likes_recd_per_user.items(), key=itemgetter(1), reverse=True)
+        return sorted(likes_recd_per_user.items(), key=itemgetter(1), reverse=True)[:limit]
 
     def get_ratio_and_rank(self, uid):
         ratios_per_user: Dict[str, float] = {
             k: float(sum(self.likes_per_user[k].values())) / len(self.messages_by_user[k]) for k in self.likes_per_user}
         return ratios_per_user[uid], rank_in_dict(ratios_per_user, uid)
 
-    def get_highest_overall_ratio(self):
+    def get_highest_overall_ratio(self, limit=15):
         ratios_per_user: Dict[str, float] = {
             k: float(sum(self.likes_per_user[k].values())) / len(self.messages_by_user[k]) for k in self.likes_per_user}
-        return sorted(ratios_per_user.items(), key=itemgetter(1), reverse=True)
+        return sorted(ratios_per_user.items(), key=itemgetter(1), reverse=True)[:limit]

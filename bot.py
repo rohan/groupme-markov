@@ -162,8 +162,8 @@ class BotEngine(bottle.Bottle):
         command = _process(message)
         if len(command) == 2:
             return """Most likes sent: {}
-            Most likes received: {}
-            Highest like/message ratio: {}""".format(
+Most likes received: {}
+Highest like/message ratio: {}""".format(
                 ", ".join(["{} ({})".format(self.database.get_name(uid), value) for uid, value in
                            self.analyzer.get_most_overall_likes_sent()]),
                 ", ".join(["{} ({})".format(self.database.get_name(uid), value) for uid, value in
@@ -182,8 +182,8 @@ class BotEngine(bottle.Bottle):
         ratio, ratio_rank = self.analyzer.get_ratio_and_rank(uid)
 
         return """Messages {name} sent that people have liked: {like_recd_count} ({like_recd_rank} overall)
-        Messages people have sent that {name} liked: {like_sent_count} ({like_sent_rank} overall)
-        Like/message ratio: {ratio:.2f} ({ratio_rank} overall)
+Messages people have sent that {name} liked: {like_sent_count} ({like_sent_rank} overall)
+Like/message ratio: {ratio:.2f} ({ratio_rank} overall)
                 """.format(
             name=self.database.get_name(uid),
             like_recd_count=likes_recd, like_recd_rank=_format_rank(recd_rank),
