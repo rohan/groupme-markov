@@ -43,13 +43,14 @@ class GroupMe:
             "text": message['text'],
             "favorited_by": json.dumps(message["favorited_by"]),
             "timestamp": message['created_at'],
+            "group_id": message['group_id'],
             "object": json.dumps(message),  # just in case
         })
 
     def refresh_messages(self, txn):
         message_table: Table = txn[self.message_table]
 
-        most_recent_message = message_table.find_one(order_by='timestamp')
+        most_recent_message = message_table.find_one(order_by='-timestamp')
         most_recent_id = most_recent_message['message_id']
 
         r = requests.get(self.messages_url, params={'token': self.key, 'limit': 100, 'after_id': most_recent_id})
@@ -66,8 +67,8 @@ class GroupMe:
 
     def recreate_messages(self, txn):
         message_table: Table = txn[self.message_table]
-        if not message_table.delete():
-            raise Exception("Unable to clear existing table.")
+        message_table.delete()
+
         r = requests.get(self.messages_url, params={"token": self.key, "limit": 100})
         count = r.json()['response']['count']
         pbar = tqdm(total=count)
@@ -96,6 +97,7 @@ class GroupMe:
             users.insert({
                 'user_id': member['user_id'],
                 'name': member['nickname'],
+                'group_id': self.gid,
                 'object': json.dumps(member)
             })
 

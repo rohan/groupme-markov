@@ -4,3 +4,5 @@ auth_key
 *.pickle
 .idea
 .venv
+*.db
+config.json
