@@ -57,13 +57,13 @@ class Analyzer:
         # user_id -> count
         self.self_likes = defaultdict(int)
 
-    def rebuild(self, txn):
-        for message in self.database.messages(txn):
+    def rebuild(self):
+        for message in self.database.messages():
             self.read_message(message)
 
     @property
     def names(self):
-        return self.database.get_all_names()
+        return self.database.names()
 
     def read_message(self, message):
         sender = message["user_id"]

@@ -11,8 +11,8 @@ class Generator:
         # user_id -> (phrase -> [next words])
         self.m = defaultdict(lambda: defaultdict(list))
 
-    def rebuild(self, txn):
-        for message in self.database.messages(txn):
+    def rebuild(self):
+        for message in self.database.messages():
             self.read_message(message)
 
     def read_message(self, message):

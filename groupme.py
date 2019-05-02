@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 
 class GroupMe:
-    def __init__(self, config_dict):
+    def __init__(self, db, config_dict):
         self.key = config_dict.get('auth_key')
         if not self.key:
             raise Exception("No auth_key set!")
@@ -24,11 +24,10 @@ class GroupMe:
         self.group_url = "https://api.groupme.com/v3/groups/{}".format(self.gid)
         self.messages_url = "https://api.groupme.com/v3/groups/{}/messages".format(self.gid)
 
-        self.message_table = 'Message'
-        self.user_table = 'User'
+        self.message_table: Table = db['Message']
+        self.user_table: Table = b['User']
 
-    def receive_message(self, txn, message):
-        message_table: Table = txn[self.message_table]
+    def receive_message(self, message):
         if message["system"] or message["text"] is None:
             return
         elif message["sender_type"] == u'bot':
@@ -37,7 +36,7 @@ class GroupMe:
             # ignore bot commands
             return
 
-        message_table.insert({
+        self.message_table.insert({
             "message_id": message['id'],
             "user_id": message['user_id'],
             "text": message['text'],
@@ -47,10 +46,8 @@ class GroupMe:
             "object": json.dumps(message),  # just in case
         })
 
-    def refresh_messages(self, txn):
-        message_table: Table = txn[self.message_table]
-
-        most_recent_message = message_table.find_one(order_by='-timestamp')
+    def refresh_messages(self):
+        most_recent_message = self.message_table.find_one(order_by='-timestamp')
         most_recent_id = most_recent_message['message_id']
 
         r = requests.get(self.messages_url, params={'token': self.key, 'limit': 100, 'after_id': most_recent_id})
@@ -60,14 +57,13 @@ class GroupMe:
                 return
 
             for message in r.json()['response']['messages']:
-                self.receive_message(txn, message)
+                self.receive_message(message)
 
             last_id = messages[-1]['id']
             r = requests.get(self.messages_url, params={'token': self.key, 'limit': 100, 'after_id': last_id})
 
-    def recreate_messages(self, txn):
-        message_table: Table = txn[self.message_table]
-        message_table.delete()
+    def recreate_messages(self):
+        self.message_table.delete()
 
         r = requests.get(self.messages_url, params={"token": self.key, "limit": 100})
         count = r.json()['response']['count']
@@ -80,7 +76,7 @@ class GroupMe:
                 return
 
             for message in messages:
-                self.receive_message(txn, message)
+                self.receive_message(message)
 
             last_id = messages[-1]["id"]
             r = requests.get(self.messages_url, params={"token": self.key, "limit": 100, "before_id": last_id})
@@ -88,26 +84,23 @@ class GroupMe:
 
         pbar.close()
 
-    def recreate_all_names(self, txn):
-        users = txn[self.user_table]
+    def recreate_all_names(self):
         r = requests.get("https://api.groupme.com/v3/groups/{}".format(self.gid), params={"token": self.key})
         resp = r.json()["response"]
 
         for member in resp["members"]:
-            users.insert({
+            self.user_table.insert({
                 'user_id': member['user_id'],
                 'name': member['nickname'],
                 'group_id': self.gid,
                 'object': json.dumps(member)
             })
 
-    def messages(self, txn):
-        message_table: Table = txn[self.message_table]
-        return message_table.find()
+    def messages(self):
+        return self.message_table.find()
 
-    def names(self, txn):
-        users_table: Table = txn[self.user_table]
-        return users_table.find()
+    def names(self):
+        return self.user_table.find()
 
 
 if __name__ == "__main__":
@@ -115,7 +108,7 @@ if __name__ == "__main__":
     with open(filename, "r") as config_file:
         config_dict = json.loads(config_file.read())
 
-    gm = GroupMe(config_dict)
-    with dataset.connect() as txn:
-        gm.recreate_messages(txn)
-        gm.recreate_all_names(txn)
+    db = dataset.connect()
+    gm = GroupMe(db, config_dict)
+    gm.recreate_all_names()
+    gm.recreate_messages()

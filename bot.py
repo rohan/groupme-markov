@@ -246,17 +246,17 @@ def main():
     with open(filename, "r") as config_file:
         config_dict = json.loads(config_file.read())
 
-    database = GroupMe(config_dict)
+    db = dataset.connect()
+    database = GroupMe(db, config_dict)
     analyzer = Analyzer(database)
     generator = Generator(7, database)
 
-    with dataset.connect() as txn:
-        database.refresh_messages(txn)
-        analyzer.rebuild(txn)
-        generator.rebuild(txn)
+    database.refresh_messages()
+    analyzer.rebuild()
+    generator.rebuild()
 
     bot = BotEngine(config_dict, analyzer, generator, database)
-    bot.run(host='0.0.0.0', port=8080)
+    bot.run(host='0.0.0.0')
 
 
 if __name__ == "__main__":
