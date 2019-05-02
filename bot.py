@@ -207,6 +207,9 @@ class BotEngine(bottle.Bottle):
                 "I can't provide love, but I can provide the next best thing: http://lmgtfy.com/?q=porn")
 
         command = _process(msg)
+        if len(command) < 2:
+            return self.send_message(_unrecognized_directive(msg))
+
         directive = command[1]
 
         fn = {
