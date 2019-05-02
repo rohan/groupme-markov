@@ -9,8 +9,6 @@ from analyzer import Analyzer
 from gen import Generator
 from groupme import GroupMe
 
-BOT_ID = "34cd6ae9e58a5c32f24d310cff"
-
 LIMIT = 450
 
 # note: must set DATABASE env variable to, e.g., "mysql+pymysql://user:password@localhost/mydatabase"
@@ -33,6 +31,7 @@ HELP_MESSAGE = """Hi! I'm a simple GroupMe bot. Here's what I can do:
 
 Replace <x> with a real name (e.g., /bot mimic Rohan Ramchand) or "me" (i.e., /bot mimic me).
 """
+
 
 def _unrecognized_directive(message):
     return "Unrecognized command {}. Try /bot help.".format(message['text'])
@@ -245,7 +244,7 @@ class BotEngine(bottle.Bottle):
 def main():
     filename = os.path.join(os.path.dirname(__file__), "config.json")
     with open(filename, "r") as config_file:
-        config_dict = json.loads(config_file)
+        config_dict = json.loads(config_file.read())
 
     database = GroupMe(config_dict)
     analyzer = Analyzer(database)
