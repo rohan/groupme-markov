@@ -12,9 +12,6 @@ from groupme import GroupMe
 
 LIMIT = 450
 
-# note: must set DATABASE env variable to, e.g., "mysql+pymysql://user:password@localhost/mydatabase"
-db = dataset.connect()
-
 HELP_MESSAGE = """Hi! I'm a simple GroupMe bot. Here's what I can do:
 /bot ping: returns "hello world"
 /bot mimic <x>: returns a random sentence, based on what <x> has said
@@ -31,6 +28,15 @@ HELP_MESSAGE = """Hi! I'm a simple GroupMe bot. Here's what I can do:
 
 Replace <x> with a real name (e.g., /bot mimic Rohan Ramchand) or "me" (i.e., /bot mimic me).
 """
+
+GLOBAL_RANK = """Most likes sent: {}
+Most likes received: {}
+Highest like/message ratio: {}"""
+
+
+USER_RANK = """Messages {name} sent that people have liked: {like_recd_count} ({like_recd_rank} overall)
+Messages people have sent that {name} liked: {like_sent_count} ({like_sent_rank} overall)
+Like/message ratio: {ratio:.2f} ({ratio_rank} overall)"""
 
 
 def _unrecognized_directive(message):
@@ -161,15 +167,13 @@ class BotEngine(bottle.Bottle):
     def rank(self, message):
         command = _process(message)
         if len(command) == 2:
-            return """Most likes sent: {}
-Most likes received: {}
-Highest like/message ratio: {}""".format(
-                ", ".join(["{} ({})".format(self.database.get_name(uid), value) for uid, value in
-                           self.analyzer.get_most_overall_likes_sent()]),
-                ", ".join(["{} ({})".format(self.database.get_name(uid), value) for uid, value in
-                           self.analyzer.get_most_overall_likes_recd()]),
-                ", ".join(["{} ({:.2f})".format(self.database.get_name(uid), value) for uid, value in
-                           self.analyzer.get_highest_overall_ratio()])
+            return GLOBAL_RANK.format(
+                ", ".join(["{} ({})".format(self.database.get_name(uid), value)
+                           for uid, value in self.analyzer.get_most_overall_likes_sent()]),
+                ", ".join(["{} ({})".format(self.database.get_name(uid), value)
+                           for uid, value in self.analyzer.get_most_overall_likes_recd()]),
+                ", ".join(["{} ({:.2f})".format(self.database.get_name(uid), value)
+                           for uid, value in self.analyzer.get_highest_overall_ratio()])
             )
 
         name = " ".join(command[2:])
@@ -181,10 +185,7 @@ Highest like/message ratio: {}""".format(
         likes_recd, recd_rank = self.analyzer.get_likes_received_and_rank(uid)
         ratio, ratio_rank = self.analyzer.get_ratio_and_rank(uid)
 
-        return """Messages {name} sent that people have liked: {like_recd_count} ({like_recd_rank} overall)
-Messages people have sent that {name} liked: {like_sent_count} ({like_sent_rank} overall)
-Like/message ratio: {ratio:.2f} ({ratio_rank} overall)
-                """.format(
+        return USER_RANK.format(
             name=self.database.get_name(uid),
             like_recd_count=likes_recd, like_recd_rank=_format_rank(recd_rank),
             like_sent_count=likes_sent, like_sent_rank=_format_rank(sent_rank),
