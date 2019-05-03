@@ -2,6 +2,8 @@ import json
 import random
 from collections import defaultdict
 
+from tqdm import tqdm
+
 from groupme import GroupMe
 
 
@@ -13,7 +15,7 @@ class Generator:
         self.m = defaultdict(lambda: defaultdict(list))
 
     def rebuild(self):
-        for message in self.database.messages():
+        for message in tqdm(self.database.messages(), desc="Rebuilding generator models"):
             self.read_message(json.loads(message['object']))
 
     def read_message(self, message):
@@ -52,7 +54,7 @@ class Generator:
                 output += [random.choice(letters)]
 
         print(output)
-        return " ".join(output).encode('utf8')
+        return " ".join(output)
 
     def k_random_words(self, speaker):
         keys = self.m[speaker].keys()

@@ -4,6 +4,8 @@ from operator import itemgetter
 
 from typing import Dict, Any, Optional
 
+from tqdm import tqdm
+
 from groupme import GroupMe
 
 IGNORE = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'I', 'it',
@@ -59,7 +61,7 @@ class Analyzer:
         self.self_likes = defaultdict(int)
 
     def rebuild(self):
-        for message in self.database.messages():
+        for message in tqdm(self.database.messages(), desc="Rebuilding analyzer models"):
             self.read_message(json.loads(message['object']))
 
     def read_message(self, message):
